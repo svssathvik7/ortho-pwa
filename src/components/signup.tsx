@@ -1,19 +1,43 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-
+import { toast } from '@/hooks/use-toast';
+import axios from 'axios';
+import { Link, useNavigate } from 'react-router-dom';
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const SignupForm = () => {
   const [formData, setFormData] = useState({
     username: '',
-    email: ''
+    email: '',
+    password: ''
   });
+  const navigate = useNavigate();
 
-  const handleSubmit = (e:any) => {
+  const handleSubmit = async(e:any) => {
     e.preventDefault();
     // Handle form submission logic here
-    console.log('Form submitted:', formData);
+    try {
+      const response = (await axios.post(`${backendUrl}/api/auth/register`,formData)).data;
+      toast(
+        {
+          title: "Successfully registered!"
+        }
+      )
+      console.log("At register",response);
+      navigate("/auth/login");
+      return;
+    } catch (error:any) {
+      console.log("At login",error);
+      const errorText = error?.response?.data?.message??"";
+      toast(
+        {
+          title: "Failed to login!",
+          description: errorText
+        }
+      )
+      return;
+    }
   };
 
   const handleChange = (e:any) => {
@@ -57,6 +81,24 @@ const SignupForm = () => {
               className="w-full"
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full"
+              required
+            />
+          </div>
+
+          <div className='w-full h-fit p-2 flex items-center justify-end'>
+              <p>Already have an account?</p>
+              <Button><Link to='/auth/login' className='px-4 mx-1'>Login</Link></Button>
           </div>
 
           <Button type="submit" className="w-full">

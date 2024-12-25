@@ -1,19 +1,41 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
-
+import axios from "axios";
+import { toast } from '@/hooks/use-toast';
+import { Link, useNavigate } from 'react-router-dom';
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const SigninForm = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
-
-  const handleSubmit = (e:any) => {
+  const navigate = useNavigate();
+  const handleSubmit = async(e:any) => {
     e.preventDefault();
     // Handle form submission logic here
-    console.log('Form submitted:', formData);
+    try {
+      const response = (await axios.post(`${backendUrl}/api/auth/login`,formData)).data;
+      toast(
+        {
+          title: "Successfully loggedin!"
+        }
+      )
+      console.log("At login",response);
+      navigate("/");
+      return;
+    } catch (error:any) {
+      console.log("At login",error);
+      const errorText = error?.response?.data?.message??"";
+      toast(
+        {
+          title: "Failed to login!",
+          description: errorText
+        }
+      )
+      return;
+    }
   };
 
   const handleChange = (e:any) => {
@@ -57,6 +79,10 @@ const SigninForm = () => {
               className="w-full"
               required
             />
+          </div>
+          <div className='w-full h-fit p-2 flex items-center justify-end'>
+              <p>Don't have an account?</p>
+              <Button><Link to='/auth/register' className='px-4 mx-1'>Register</Link></Button>
           </div>
 
           <Button type="submit" className="w-full">

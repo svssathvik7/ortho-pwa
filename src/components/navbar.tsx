@@ -9,7 +9,7 @@ export default function Navbar(){
                 <a>route1</a>
                 <a>route1</a>
             </nav>
-            <Button><a href="/auth">Login</a></Button>
+            <Button><a href="/auth/login" className="px-4">Login</a></Button>
         </div>
     )
 }
