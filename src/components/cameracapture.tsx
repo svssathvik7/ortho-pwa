@@ -1,12 +1,16 @@
 import { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Camera, Download, RefreshCw, Square } from "lucide-react";
 
 const CameraCapture = () => {
+  // State management for video stream and captured image
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
+  // Initialize webcam stream
   const startWebcam = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -21,6 +25,7 @@ const CameraCapture = () => {
     }
   };
 
+  // Clean up video stream
   const stopWebcam = () => {
     if (mediaStream) {
       mediaStream.getTracks().forEach((track) => {
@@ -33,6 +38,7 @@ const CameraCapture = () => {
     }
   };
 
+  // Capture image from video stream
   const captureImage = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
@@ -42,9 +48,7 @@ const CameraCapture = () => {
       if (context && video.videoWidth && video.videoHeight) {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
-
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
         const imageDataUrl = canvas.toDataURL("image/jpeg");
         setCapturedImage(imageDataUrl);
       }
@@ -65,65 +69,84 @@ const CameraCapture = () => {
   };
 
   return (
-    <div className="relative w-full max-w-md mx-auto">
-      {/* Always render the video element */}
-      <video
-        ref={videoRef}
-        autoPlay
-        muted
-        className={`w-full rounded-lg ${capturedImage ? "hidden" : "block"}`}
-      />
-      <canvas ref={canvasRef} className="hidden" />
-      {capturedImage ? (
-        <>
-          <img
-            src={capturedImage}
-            alt="Captured"
-            className="w-full rounded-lg mb-4"
+    <Card className="w-full max-w-md mx-auto">
+      <CardContent className="p-6">
+        {/* Video preview or captured image */}
+        <div className="relative mb-4">
+          <video
+            ref={videoRef}
+            autoPlay
+            muted
+            className={`w-full rounded-lg ${capturedImage ? "hidden" : "block"}`}
           />
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={saveImage}
-              className="bg-green-500 text-white rounded-full px-4 py-2 text-sm shadow-md"
-            >
-              Save
-            </button>
-            <button
-              onClick={resetImage}
-              className="bg-red-500 text-white rounded-full px-4 py-2 text-sm shadow-md"
-            >
-              Reset
-            </button>
-          </div>
-        </>
-      ) : (
-        <div className="flex justify-center gap-4">
-          {!mediaStream ? (
-            <button
-              onClick={startWebcam}
-              className="bg-blue-500 text-white rounded-full px-4 py-2 text-sm shadow-md"
-            >
-              Start Webcam
-            </button>
+          <canvas ref={canvasRef} className="hidden" />
+          
+          {capturedImage && (
+            <img
+              src={capturedImage}
+              alt="Captured"
+              className="w-full rounded-lg"
+            />
+          )}
+        </div>
+
+        {/* Control buttons */}
+        <div className="flex justify-center gap-3">
+          {capturedImage ? (
+            <>
+              <Button
+                onClick={saveImage}
+                variant="default"
+                className="gap-2 px-2"
+              >
+                <Download className="w-4 h-4" />
+                Save
+              </Button>
+              <Button
+                onClick={resetImage}
+                variant="destructive"
+                className="gap-2 px-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Reset
+              </Button>
+            </>
           ) : (
             <>
-              <button
-                onClick={captureImage}
-                className="bg-yellow-500 text-black rounded-full px-4 py-2 text-sm shadow-md"
-              >
-                Capture Image
-              </button>
-              <button
-                onClick={stopWebcam}
-                className="bg-red-500 text-white rounded-full px-4 py-2 text-sm shadow-md"
-              >
-                Stop Camera
-              </button>
+              {!mediaStream ? (
+                <Button
+                  onClick={startWebcam}
+                  variant="default"
+                  className="gap-2 px-2"
+                >
+                  <Camera className="w-4 h-4" />
+                  Start Webcam
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    onClick={captureImage}
+                    variant="secondary"
+                    className="gap-2 px-2"
+                  >
+                    <Camera className="w-4 h-4" />
+                    Capture
+                  </Button>
+                  <Button
+                    onClick={stopWebcam}
+                    variant="destructive"
+                    className="gap-2 px-2"
+                  >
+                    <Square className="w-4 h-4" />
+                    Stop
+                  </Button>
+                </>
+              )}
             </>
           )}
         </div>
-      )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

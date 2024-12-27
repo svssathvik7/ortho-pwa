@@ -1,11 +1,11 @@
-import CameraCapture from "@/components/cameracapture";
+import AssetUploader from "@/components/assetuploader";
 import Navbar from "@/components/navbar";
 
 export default function Home(){
     return (
         <div>
             <Navbar/>
-            <CameraCapture/>
+            <AssetUploader/>
         </div>
     )
 }
