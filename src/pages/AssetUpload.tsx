@@ -1,10 +1,11 @@
 import AssetUploader from "@/components/assetuploader";
 import Navbar from "@/components/navbar";
 
-export default function Home(){
+export default function AssetUpload(){
     return (
-        <div>
+        <>
             <Navbar/>
-        </div>
+            <AssetUploader/>
+        </>
     )
-}
+};

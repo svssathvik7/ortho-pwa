@@ -8,9 +8,9 @@ export default function Navbar() {
     return (
         <div className="flex items-center justify-around">
             <p>OrthoPWA</p>
-            <nav className="gap-4 flex items-center justify-around">
-                <a href="/route1">Route1</a>
-                <a href="/route2">Route2</a>
+            <nav className="gap-4 w-1/3 flex items-center justify-around">
+                <Link to="/">Home</Link>
+                <Link to="/asset/upload">Assets</Link>
                 <a href="/route3">Route3</a>
             </nav>
             {isAuthenticated ? (
