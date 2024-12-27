@@ -32,7 +32,7 @@ const SignupForm = () => {
       const errorText = error?.response?.data?.message??"";
       toast(
         {
-          title: "Failed to login!",
+          title: "Failed to register!",
           description: errorText
         }
       )

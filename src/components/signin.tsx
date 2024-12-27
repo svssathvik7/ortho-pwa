@@ -5,8 +5,10 @@ import { useState } from 'react';
 import axios from "axios";
 import { toast } from '@/hooks/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuthStore } from '@/store/authStore';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const SigninForm = () => {
+  const login = useAuthStore((state)=>state.login);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -17,6 +19,7 @@ const SigninForm = () => {
     // Handle form submission logic here
     try {
       const response = (await axios.post(`${backendUrl}/api/auth/login`,formData)).data;
+      login(response.data.email);
       toast(
         {
           title: "Successfully loggedin!"
