@@ -268,7 +268,7 @@ const FileUploader = () => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto h-fit max-h-72 overflow-y-scroll">
+    <Card className="w-72 mx-auto h-fit max-h-72 overflow-y-scroll">
       <CardHeader>
         <CardTitle className="text-xl font-semibold">
           Upload Medical Images

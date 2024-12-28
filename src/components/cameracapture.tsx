@@ -69,7 +69,7 @@ const CameraCapture = () => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-72 max-w-md mx-auto">
       <CardContent className="p-6">
         {/* Video preview or captured image */}
         <div className="relative mb-4">
