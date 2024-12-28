@@ -33,6 +33,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
+import { useAuthStore } from "@/store/authStore";
 
 // Define accepted file types and their MIME types
 const ACCEPTED_FILE_TYPES = {
@@ -45,6 +46,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 // Form validation schema
 const formSchema = z.object({
+  owner: z.string().email("Invalid email"),
   bodyParts: z.array(z.string()).min(1, "Select at least one body part"),
   diagnoses: z.array(z.string()),
   classifications: z.array(z.string()),
@@ -81,10 +83,13 @@ const FileUploader = () => {
   }>({});
   const [uploading, setUploading] = useState(false);
 
+  const email = useAuthStore((state)=>state.email);
+
   // Initialize form
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      owner: email,
       bodyParts: [],
       diagnoses: [],
       classifications: [],
