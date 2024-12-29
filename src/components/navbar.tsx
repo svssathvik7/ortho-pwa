@@ -35,8 +35,7 @@ export default function Navbar() {
             <p>OrthoPWA</p>
             <nav className="gap-4 w-1/3 flex items-center justify-around">
                 <Link to="/">Home</Link>
-                <Link to="/asset/upload">Assets</Link>
-                <Link to="/asset/search">Search</Link>
+                <Link to="/asset/upload">Asset Manager</Link>
             </nav>
             {isAuthenticated ? (
                 <Button className="px-4" onClick={handleLogout}>

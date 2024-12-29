@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Slider
-} from "@/components/ui/slider";
+import { Slider } from "@/components/ui/slider";
 import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
+import ImageResult from "@/types/assetResults";
+import { useNavigate } from "react-router-dom";
 
 // Interface for our search filters
 interface SearchFilters {
@@ -25,38 +25,24 @@ interface SearchFilters {
   gender: string;
 }
 
-// Interface for the search results
-interface ImageResult {
-  id: string;
-  cloudinaryUrl: string;
-  metadata: {
-    bodyParts: string[];
-    diagnoses: string[];
-    classifications: string[];
-    implants: string[];
-    patientDemographics: {
-      age: number;
-      gender: string;
-    };
-  };
-}
-
 const ImageSearch = () => {
   // State for tag inputs
-  const [bodyPartInput, setBodyPartInput] = useState('');
-  const [diagnosisInput, setDiagnosisInput] = useState('');
-  const [classificationInput, setClassificationInput] = useState('');
-  const [implantInput, setImplantInput] = useState('');
+  const [bodyPartInput, setBodyPartInput] = useState("");
+  const [diagnosisInput, setDiagnosisInput] = useState("");
+  const [classificationInput, setClassificationInput] = useState("");
+  const [implantInput, setImplantInput] = useState("");
 
   // State for selected tags
   const [selectedBodyParts, setSelectedBodyParts] = useState<string[]>([]);
   const [selectedDiagnoses, setSelectedDiagnoses] = useState<string[]>([]);
-  const [selectedClassifications, setSelectedClassifications] = useState<string[]>([]);
+  const [selectedClassifications, setSelectedClassifications] = useState<
+    string[]
+  >([]);
   const [selectedImplants, setSelectedImplants] = useState<string[]>([]);
 
   // State for age range and gender
   const [ageRange, setAgeRange] = useState<[number, number]>([0, 100]);
-  const [selectedGender, setSelectedGender] = useState<string>('all');
+  const [selectedGender, setSelectedGender] = useState<string>("all");
 
   // State for search results and loading
   const [searchResults, setSearchResults] = useState<ImageResult[]>([]);
@@ -72,7 +58,7 @@ const ImageSearch = () => {
     const newTag = input.trim();
     if (newTag && !selectedTags.includes(newTag)) {
       setSelectedTags([...selectedTags, newTag]);
-      setInput('');
+      setInput("");
     }
   };
 
@@ -82,9 +68,9 @@ const ImageSearch = () => {
     selectedTags: string[],
     setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
-    setSelectedTags(selectedTags.filter(tag => tag !== tagToRemove));
+    setSelectedTags(selectedTags.filter((tag) => tag !== tagToRemove));
   };
-
+  const navigate = useNavigate();
   // Function to perform the search
   const handleSearch = async () => {
     try {
@@ -97,126 +83,285 @@ const ImageSearch = () => {
         classifications: selectedClassifications,
         implants: selectedImplants,
         ageRange: ageRange,
-        gender: selectedGender
+        gender: selectedGender,
       };
 
       // Make the API call
-      const response = await api.post('/api/assets/search', searchFilters);
+      const response = (await api.post("/api/assets/search", searchFilters))
+        .data;
       setSearchResults(response.data.images);
 
       toast({
         title: "Search Complete",
-        description: `Found ${response.data.images.length} results`
+        description: `Found ${response.data.images.length} results`,
       });
-
+      navigate("/asset",{state: {images: response.data.images}});
       console.log(response);
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
       toast({
         title: "Search Failed",
         description: "Failed to perform search. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Helper function to render tag input section
-  const renderTagInput = (
-    placeholder: string,
-    inputValue: string,
-    setInputValue: React.Dispatch<React.SetStateAction<string>>,
-    selectedTags: string[],
-    setSelectedTags: React.Dispatch<React.SetStateAction<string[]>>
-  ) => (
-    <div className="space-y-2 w-full">
-      <div className="flex flex-wrap mb-2">
-        {selectedTags.map(tag => (
-          <span
-            key={tag}
-            className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
-          >
-            {tag}
-            <button
-              onClick={() => handleRemoveTag(tag, selectedTags, setSelectedTags)}
-              className="text-blue-600 hover:text-blue-800 px-2"
-            >
-              ×
-            </button>
-          </span>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <Input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === 'Enter') {
-              handleAddTag(inputValue, selectedTags, setSelectedTags, setInputValue);
-            }
-          }}
-          placeholder={placeholder}
-          className="flex-1"
-        />
-        <Button
-          onClick={() => handleAddTag(inputValue, selectedTags, setSelectedTags, setInputValue)}
-          variant="secondary"
-          className='px-2'
-        >
-          Add
-        </Button>
-      </div>
-    </div>
-  );
-
   return (
     <Card className="w-96 h-96 mx-auto overflow-y-scroll p-2 flex items-center justify-start">
-      <div className='pt-64 w-full'>
+      <div className="pt-64 w-full">
         <CardContent className="p-6 space-y-6 w-full">
-          {/* Tag inputs */}
-          {renderTagInput(
-            "Enter body part...",
-            bodyPartInput,
-            setBodyPartInput,
-            selectedBodyParts,
-            setSelectedBodyParts
-          )}
-          
-          {renderTagInput(
-            "Enter diagnosis...",
-            diagnosisInput,
-            setDiagnosisInput,
-            selectedDiagnoses,
-            setSelectedDiagnoses
-          )}
-          
-          {renderTagInput(
-            "Enter classification...",
-            classificationInput,
-            setClassificationInput,
-            selectedClassifications,
-            setSelectedClassifications
-          )}
-          
-          {renderTagInput(
-            "Enter implant...",
-            implantInput,
-            setImplantInput,
-            selectedImplants,
-            setSelectedImplants
-          )}
+          {/* Body Part Input */}
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {selectedBodyParts.map((tag) => (
+                <span
+                  key={tag}
+                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                >
+                  {tag}
+                  <button
+                    onClick={() =>
+                      handleRemoveTag(
+                        tag,
+                        selectedBodyParts,
+                        setSelectedBodyParts
+                      )
+                    }
+                    className="text-blue-600 hover:text-blue-800 px-2"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={bodyPartInput}
+                onChange={(e) => setBodyPartInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddTag(
+                      bodyPartInput,
+                      selectedBodyParts,
+                      setSelectedBodyParts,
+                      setBodyPartInput
+                    );
+                  }
+                }}
+                placeholder="Enter body part..."
+                className="flex-1"
+              />
+              <Button
+                onClick={() =>
+                  handleAddTag(
+                    bodyPartInput,
+                    selectedBodyParts,
+                    setSelectedBodyParts,
+                    setBodyPartInput
+                  )
+                }
+                variant="secondary"
+                className="px-2"
+              >
+                Add
+              </Button>
+            </div>
+          </div>
+
+          {/* Diagnosis Input */}
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {selectedDiagnoses.map((tag) => (
+                <span
+                  key={tag}
+                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                >
+                  {tag}
+                  <button
+                    onClick={() =>
+                      handleRemoveTag(
+                        tag,
+                        selectedDiagnoses,
+                        setSelectedDiagnoses
+                      )
+                    }
+                    className="text-blue-600 hover:text-blue-800 px-2"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={diagnosisInput}
+                onChange={(e) => setDiagnosisInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddTag(
+                      diagnosisInput,
+                      selectedDiagnoses,
+                      setSelectedDiagnoses,
+                      setDiagnosisInput
+                    );
+                  }
+                }}
+                placeholder="Enter diagnosis..."
+                className="flex-1"
+              />
+              <Button
+                onClick={() =>
+                  handleAddTag(
+                    diagnosisInput,
+                    selectedDiagnoses,
+                    setSelectedDiagnoses,
+                    setDiagnosisInput
+                  )
+                }
+                variant="secondary"
+                className="px-2"
+              >
+                Add
+              </Button>
+            </div>
+          </div>
+
+          {/* Classification Input */}
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {selectedClassifications.map((tag) => (
+                <span
+                  key={tag}
+                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                >
+                  {tag}
+                  <button
+                    onClick={() =>
+                      handleRemoveTag(
+                        tag,
+                        selectedClassifications,
+                        setSelectedClassifications
+                      )
+                    }
+                    className="text-blue-600 hover:text-blue-800 px-2"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={classificationInput}
+                onChange={(e) => setClassificationInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddTag(
+                      classificationInput,
+                      selectedClassifications,
+                      setSelectedClassifications,
+                      setClassificationInput
+                    );
+                  }
+                }}
+                placeholder="Enter classification..."
+                className="flex-1"
+              />
+              <Button
+                onClick={() =>
+                  handleAddTag(
+                    classificationInput,
+                    selectedClassifications,
+                    setSelectedClassifications,
+                    setClassificationInput
+                  )
+                }
+                variant="secondary"
+                className="px-2"
+              >
+                Add
+              </Button>
+            </div>
+          </div>
+
+          {/* Implant Input */}
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {selectedImplants.map((tag) => (
+                <span
+                  key={tag}
+                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+                >
+                  {tag}
+                  <button
+                    onClick={() =>
+                      handleRemoveTag(
+                        tag,
+                        selectedImplants,
+                        setSelectedImplants
+                      )
+                    }
+                    className="text-blue-600 hover:text-blue-800 px-2"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={implantInput}
+                onChange={(e) => setImplantInput(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === "Enter") {
+                    handleAddTag(
+                      implantInput,
+                      selectedImplants,
+                      setSelectedImplants,
+                      setImplantInput
+                    );
+                  }
+                }}
+                placeholder="Enter implant..."
+                className="flex-1"
+              />
+              <Button
+                onClick={() =>
+                  handleAddTag(
+                    implantInput,
+                    selectedImplants,
+                    setSelectedImplants,
+                    setImplantInput
+                  )
+                }
+                variant="secondary"
+                className="px-2"
+              >
+                Add
+              </Button>
+            </div>
+          </div>
 
           {/* Age Range Slider */}
           <div className="space-y-2 w-full">
-            <label className="text-sm font-medium">Age Range: {ageRange[0]} - {ageRange[1]}</label>
+            <label className="text-sm font-medium">
+              Age Range: {ageRange[0]} - {ageRange[1]}
+            </label>
             <Slider
               defaultValue={[0, 100]}
               max={100}
               step={1}
               value={ageRange}
-              onValueChange={(value: number[]) => setAgeRange([value[0], value[1]])}
+              onValueChange={(value: number[]) =>
+                setAgeRange([value[0], value[1]])
+              }
               className="py-4"
             />
           </div>
@@ -224,10 +369,7 @@ const ImageSearch = () => {
           {/* Gender Selection */}
           <div className="space-y-2 w-full">
             <label className="text-sm font-medium">Gender</label>
-            <Select
-              value={selectedGender}
-              onValueChange={setSelectedGender}
-            >
+            <Select value={selectedGender} onValueChange={setSelectedGender}>
               <SelectTrigger>
                 <SelectValue placeholder="Select gender" />
               </SelectTrigger>
@@ -241,38 +383,13 @@ const ImageSearch = () => {
           </div>
 
           {/* Search Button */}
-          <Button 
+          <Button
             onClick={handleSearch}
             disabled={isLoading}
             className="w-full px-2"
           >
             {isLoading ? "Searching..." : "Search Images"}
           </Button>
-
-          {/* Results Display */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-            {searchResults.map((result) => (
-              <Card key={result.id} className="overflow-hidden">
-                <img
-                  src={result.cloudinaryUrl}
-                  alt="Medical image"
-                  className="w-full h-48 object-cover"
-                />
-                <CardContent className="p-3">
-                  <div className="text-sm space-y-1">
-                    <p>Age: {result.metadata.patientDemographics.age}</p>
-                    <p>Gender: {result.metadata.patientDemographics.gender}</p>
-                    {result.metadata.bodyParts.length > 0 && (
-                      <p>Body Parts: {result.metadata.bodyParts.join(', ')}</p>
-                    )}
-                    {result.metadata.diagnoses.length > 0 && (
-                      <p>Diagnoses: {result.metadata.diagnoses.join(', ')}</p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
         </CardContent>
       </div>
     </Card>
