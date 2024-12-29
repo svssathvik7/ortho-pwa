@@ -1,5 +1,6 @@
 import AssetUploader from "@/components/assetuploader";
 import AssetGrid from "@/components/displayassets";
+import ImageSearch from "@/components/assetSearch"; // Import ImageSearch component
 import Navbar from "@/components/navbar";
 import { useAuthStore } from "@/store/authStore";
 import { useEffect, useState } from "react";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button"; // Import ShadCN Button
 export default function AssetUpload() {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const [view, setView] = useState<"upload" | "display">("upload");
+  const [view, setView] = useState<"upload" | "display" | "search">("upload"); // Add "search" to the state
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -22,23 +23,32 @@ export default function AssetUpload() {
       <Navbar />
       <div className="flex absolute-centre w-fit h-72 flex-col items-center justify-center">
         <div className="flex justify-center mt-4 space-x-4 w-fit h-fit">
-            <Button
+          <Button
             variant={view === "upload" ? "default" : "outline"}
             onClick={() => setView("upload")}
             className="px-2"
-            >
+          >
             Upload Asset
-            </Button>
-            <Button
+          </Button>
+          <Button
             variant={view === "display" ? "default" : "outline"}
             onClick={() => setView("display")}
             className="px-2"
-            >
+          >
             Display Assets
-            </Button>
+          </Button>
+          <Button
+            variant={view === "search" ? "default" : "outline"} // Add logic for "search"
+            onClick={() => setView("search")}
+            className="px-2"
+          >
+            Search Assets
+          </Button>
         </div>
         <div className="mt-6">
-            {view === "upload" ? <AssetUploader /> : <AssetGrid />}
+          {view === "upload" && <AssetUploader />}
+          {view === "display" && <AssetGrid />}
+          {view === "search" && <ImageSearch />} {/* Render ImageSearch for "search" view */}
         </div>
       </div>
     </div>

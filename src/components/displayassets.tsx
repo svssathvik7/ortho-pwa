@@ -15,7 +15,7 @@ export default function AssetGrid(){
               owner: email,
             })
           ).data;
-          setImages(response);
+          setImages(response.data.images);
           console.log(response);
         } catch (error: any) {
           console.log(error);

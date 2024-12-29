@@ -36,7 +36,7 @@ export default function Navbar() {
             <nav className="gap-4 w-1/3 flex items-center justify-around">
                 <Link to="/">Home</Link>
                 <Link to="/asset/upload">Assets</Link>
-                <a href="/route3">Route3</a>
+                <Link to="/asset/search">Search</Link>
             </nav>
             {isAuthenticated ? (
                 <Button className="px-4" onClick={handleLogout}>

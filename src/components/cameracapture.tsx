@@ -117,6 +117,12 @@ const CameraCapture = () => {
       formData.append("file", imageFile);
 
       const metaData = {
+        bodyParts: parseTagString(bodyPartTags),
+        diagnoses: parseTagString(diagnosisTags),
+        classifications: parseTagString(classificationTags),
+        implants: parseTagString(implantTags),
+        notes,
+        patientDemographics: demographics,
         owner: email,
       };
 
