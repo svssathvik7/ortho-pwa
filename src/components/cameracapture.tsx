@@ -1,21 +1,26 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Camera, Download, RefreshCw, Square } from "lucide-react";
+import { Camera, Download, RefreshCw, Square, Upload } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { Input } from "@/components/ui/input";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@radix-ui/react-select";
+import { BODY_PARTS, CLASSIFICATIONS } from "@/store/constants";  // Make sure these constants are correctly imported.
+import { Textarea } from "@/components/ui/textarea";
 
 const CameraCapture = () => {
-  // State management for video stream and captured image
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  // Initialize webcam stream
+  const { register, handleSubmit, setValue, formState: { errors }, control } = useForm();
+
   const startWebcam = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-      });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
@@ -25,12 +30,9 @@ const CameraCapture = () => {
     }
   };
 
-  // Clean up video stream
   const stopWebcam = () => {
     if (mediaStream) {
-      mediaStream.getTracks().forEach((track) => {
-        track.stop();
-      });
+      mediaStream.getTracks().forEach((track) => track.stop());
       setMediaStream(null);
       if (videoRef.current) {
         videoRef.current.srcObject = null;
@@ -38,7 +40,6 @@ const CameraCapture = () => {
     }
   };
 
-  // Capture image from video stream
   const captureImage = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
@@ -65,6 +66,39 @@ const CameraCapture = () => {
       a.href = capturedImage;
       a.download = "captured-image.jpg";
       a.click();
+    }
+  };
+
+  const uploadImage = () => {
+    if (capturedImage) {
+      setIsUploading(true);
+    }
+  };
+
+  const onUploadAll = async (data: any) => {
+    if (capturedImage) {
+      try {
+        const formData = new FormData();
+        formData.append("image", capturedImage);  // Assuming the captured image is in base64 format
+        formData.append("bodyParts", data.bodyParts); // Example of tags
+        formData.append("classifications", data.classifications); // Example of tags
+        formData.append("notes", data.notes); // Any additional notes
+
+        // Perform your image upload logic here (e.g., API request)
+        console.log("Uploading image with tags", data);
+
+        // Example API call
+        // await fetch("/upload", {
+        //   method: "POST",
+        //   body: formData,
+        // });
+
+        console.log("Upload successful!");
+      } catch (error) {
+        console.error("Error uploading image", error);
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -101,6 +135,14 @@ const CameraCapture = () => {
               >
                 <Download className="w-4 h-4" />
                 Save
+              </Button>
+              <Button
+                onClick={uploadImage}
+                variant="default"
+                className="gap-2 px-2"
+              >
+                <Upload className="w-4 h-4" />
+                Upload
               </Button>
               <Button
                 onClick={resetImage}
@@ -145,6 +187,9 @@ const CameraCapture = () => {
             </>
           )}
         </div>
+
+        {/* Upload Form (Tags) */}
+        
       </CardContent>
     </Card>
   );

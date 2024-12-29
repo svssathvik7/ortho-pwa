@@ -127,3 +127,8 @@
   bottom: 0;
   margin: auto;
 }
+
+body{
+  height: 100dvh;
+  overflow-y: hidden;
+}
