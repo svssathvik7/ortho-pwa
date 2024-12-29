@@ -18,9 +18,9 @@ export default function AssetUpload() {
   }, [isAuthenticated, navigate]);
 
   return (
-    <>
+    <div className="h-screen">
       <Navbar />
-      <div className="flex absolute-centre w-fit h-fit flex-col items-center justify-center">
+      <div className="flex absolute-centre w-fit h-72 flex-col items-center justify-center">
         <div className="flex justify-center mt-4 space-x-4 w-fit h-fit">
             <Button
             variant={view === "upload" ? "default" : "outline"}
@@ -41,6 +41,6 @@ export default function AssetUpload() {
             {view === "upload" ? <AssetUploader /> : <AssetGrid />}
         </div>
       </div>
-    </>
+    </div>
   );
 }

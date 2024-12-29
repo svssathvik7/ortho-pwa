@@ -1,30 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X, Upload, File } from "lucide-react";
@@ -35,14 +16,14 @@ import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
 
-// Define accepted file types and their MIME types
-const ACCEPTED_FILE_TYPES = {
-  "image/jpeg": [".jpg", ".jpeg"],
-  "image/png": [".png"],
-  "application/dicom": [".dcm", ".dicom"],
-};
+// Import constants
+import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE, BODY_PARTS, CLASSIFICATIONS } from "../store/constants";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+interface FileWithPreview extends File {
+  preview?: string;
+  uploadUrl?: string;
+}
+
 
 // Form validation schema
 const formSchema = z.object({
@@ -59,33 +40,16 @@ const formSchema = z.object({
   notes: z.string(),
 });
 
-interface FileWithPreview extends File {
-  preview?: string;
-  uploadUrl?: string;
-}
-
-// Sample options for dropdowns - replace with your actual options
-const BODY_PARTS = [
-  "Head",
-  "Chest",
-  "Abdomen",
-  "Spine",
-  "Upper Extremity",
-  "Lower Extremity",
-];
-const CLASSIFICATIONS = ["X-Ray", "MRI", "CT", "Ultrasound"];
-
+// File uploader component
 const FileUploader = () => {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<{
-    [key: string]: number;
-  }>({});
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
   const [uploading, setUploading] = useState(false);
 
-  const email = useAuthStore((state)=>state.email);
+  const email = useAuthStore((state) => state.email);
 
-  // Initialize form
+  // Form initialization
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -103,12 +67,7 @@ const FileUploader = () => {
     },
   });
 
-  const isDICOM = (file: File) => {
-    return (
-      file?.name?.toLowerCase()?.endsWith(".dcm") ||
-      file?.name?.toLowerCase()?.endsWith(".dicom")
-    );
-  };
+  const isDICOM = (file: File) => file?.name?.toLowerCase()?.endsWith(".dcm") || file?.name?.toLowerCase()?.endsWith(".dicom");
 
   const validateFileType = (file: File) => {
     const fileType = file.type;
@@ -116,7 +75,7 @@ const FileUploader = () => {
     return Object.keys(ACCEPTED_FILE_TYPES).includes(fileType);
   };
 
-  const createPreview = (file: File): Promise<string> => {
+  const createPreview = useCallback(async (file: File): Promise<string> => {
     return new Promise((resolve) => {
       if (isDICOM(file)) {
         resolve("/api/placeholder/200/200");
@@ -124,17 +83,15 @@ const FileUploader = () => {
         resolve(URL.createObjectURL(file));
       }
     });
-  };
+  }, []);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setError(null);
 
-    // Validate each file
+    // Validate files
     for (const file of acceptedFiles) {
       if (!validateFileType(file)) {
-        setError(
-          "Invalid file type. Please upload only JPEG, PNG, or DICOM files."
-        );
+        setError("Invalid file type. Please upload only JPEG, PNG, or DICOM files.");
         return;
       }
       if (file.size > MAX_FILE_SIZE) {
@@ -149,9 +106,10 @@ const FileUploader = () => {
         return Object.assign(file, { preview });
       })
     );
+    
 
     setFiles((prevFiles) => [...prevFiles, ...filesWithPreviews]);
-  }, []);
+  }, [createPreview]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -159,7 +117,7 @@ const FileUploader = () => {
     multiple: true,
   });
 
-  const removeFile = (fileToRemove: FileWithPreview) => {
+  const removeFile = useCallback((fileToRemove: FileWithPreview) => {
     setFiles((prevFiles) => prevFiles.filter((file) => file !== fileToRemove));
     if (fileToRemove.preview && !isDICOM(fileToRemove)) {
       URL.revokeObjectURL(fileToRemove.preview);
@@ -169,9 +127,9 @@ const FileUploader = () => {
       delete newProgress[fileToRemove.name];
       return newProgress;
     });
-  };
+  }, [isDICOM]);
 
-  const removeAllFiles = () => {
+  const removeAllFiles = useCallback(() => {
     files.forEach((file) => {
       if (file.preview && !isDICOM(file)) {
         URL.revokeObjectURL(file.preview);
@@ -179,9 +137,9 @@ const FileUploader = () => {
     });
     setFiles([]);
     setUploadProgress({});
-  };
+  }, [files, isDICOM]);
 
-  const uploadFile = async (file: FileWithPreview, metadata: any) => {
+  const uploadFile = async (file: File, metadata: any) => {
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -203,13 +161,11 @@ const FileUploader = () => {
         },
       });
       return response.data.image.cloudinaryUrl;
-    } catch (error:any) {
+    } catch (error: any) {
       console.log(error);
-      toast(
-        {
-          title: error.response.data
-        }
-      )
+      toast({
+        title: error.response.data,
+      });
     }
   };
 
@@ -243,20 +199,16 @@ const FileUploader = () => {
               ...prev,
               [file.name]: 100,
             }));
-            toast(
-              {
-                title: "Uploaded files!"
-              }
-            );
+            toast({
+              title: "Uploaded files!",
+            });
             return;
-          } catch (error:any) {
+          } catch (error: any) {
             setError(`Failed to upload ${file.name}`);
             console.log(error);
-            toast(
-              {
-                title: error.response.data
-              }
-            )
+            toast({
+              title: error.response.data,
+            });
           } finally {
             clearInterval(progressInterval);
           }
@@ -269,6 +221,7 @@ const FileUploader = () => {
 
   return (
     <Card className="w-72 mx-auto h-fit max-h-72 overflow-y-scroll">
+      {/* Card Header */}
       <CardHeader>
         <CardTitle className="text-xl font-semibold">
           Upload Medical Images
@@ -278,37 +231,34 @@ const FileUploader = () => {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Dropzone */}
             <div
               {...getRootProps()}
               className={`
                 border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
                 transition-colors duration-200
-                ${
-                  isDragActive
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-300"
-                }
+                ${isDragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"}
                 ${uploading ? "pointer-events-none opacity-50" : ""}
               `}
             >
               <input {...getInputProps()} disabled={uploading} />
               <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-600">
-                {isDragActive
-                  ? "Drop files here..."
-                  : "Drag & drop medical images here, or click to select"}
+                {isDragActive ? "Drop files here..." : "Drag & drop medical images here, or click to select"}
               </p>
               <p className="text-sm text-gray-500 mt-2">
                 Accepted files: JPEG, PNG, DICOM (max 10MB)
               </p>
             </div>
 
+            {/* Error Message */}
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
 
+            {/* File Preview */}
             {files.length > 0 && (
               <div className="grid grid-cols-2 gap-4">
                 {files.map((file, index) => (
@@ -328,29 +278,25 @@ const FileUploader = () => {
                           className="w-full h-full object-cover"
                         />
                       )}
-
-                      {uploadProgress[file.name] !== undefined &&
-                        uploadProgress[file.name] < 100 && (
-                          <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
-                            <Progress
-                              value={uploadProgress[file.name]}
-                              className="h-2"
-                            />
-                            <p className="text-xs text-white mt-1">
-                              {uploadProgress[file.name]}%
-                            </p>
-                          </div>
-                        )}
+                      {/* Upload Progress */}
+                      {uploadProgress[file.name] !== undefined && uploadProgress[file.name] < 100 && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
+                          <Progress
+                            value={uploadProgress[file.name]}
+                            className="h-2"
+                          />
+                          <p className="text-xs text-white mt-1">
+                            {uploadProgress[file.name]}%
+                          </p>
+                        </div>
+                      )}
                     </div>
 
+                    {/* Hover Actions */}
                     <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                       <div className="absolute inset-0 p-4 text-white">
-                        <p className="text-sm font-medium truncate">
-                          {file.name}
-                        </p>
-                        <p className="text-xs">
-                          {(file.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
+                        <p className="text-sm font-medium truncate">{file.name}</p>
+                        <p className="text-xs">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                         {file.uploadUrl && (
                           <a
                             href={file.uploadUrl}
@@ -377,6 +323,7 @@ const FileUploader = () => {
               </div>
             )}
 
+            {/* Form Fields */}
             <FormField
               control={form.control}
               name="bodyParts"
@@ -384,9 +331,7 @@ const FileUploader = () => {
                 <FormItem>
                   <FormLabel>Body Parts</FormLabel>
                   <Select
-                    onValueChange={(value: any) =>
-                      field.onChange([...field.value, value])
-                    }
+                    onValueChange={(value: any) => field.onChange([...field.value, value])}
                     value={field.value[0]}
                   >
                     <FormControl>
@@ -395,7 +340,7 @@ const FileUploader = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {BODY_PARTS.map((part) => (
+                      {BODY_PARTS.map((part:any) => (
                         <SelectItem key={part} value={part}>
                           {part}
                         </SelectItem>
@@ -414,9 +359,7 @@ const FileUploader = () => {
                 <FormItem>
                   <FormLabel>Classifications</FormLabel>
                   <Select
-                    onValueChange={(value: any) =>
-                      field.onChange([...field.value, value])
-                    }
+                    onValueChange={(value: any) => field.onChange([...field.value, value])}
                     value={field.value[0]}
                   >
                     <FormControl>
@@ -425,7 +368,7 @@ const FileUploader = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {CLASSIFICATIONS.map((classification) => (
+                      {CLASSIFICATIONS.map((classification:any) => (
                         <SelectItem key={classification} value={classification}>
                           {classification}
                         </SelectItem>
