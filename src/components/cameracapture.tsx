@@ -2,22 +2,50 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Camera, Download, RefreshCw, Square, Upload } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@radix-ui/react-select";
-import { BODY_PARTS, CLASSIFICATIONS } from "@/store/constants";  // Make sure these constants are correctly imported.
-import { Textarea } from "@/components/ui/textarea";
+import { useAuthStore } from "@/store/authStore";
+import api from "@/config/axios";
+import { toast } from "@/hooks/use-toast";
+import { Textarea } from "./ui/textarea";
+import { Input } from "./ui/input";
 
+interface PatientDemographics {
+  age: string;
+  gender: string;
+  clinicalHistory: string;
+}
+
+const parseTagString = (tagString: string): string[] => {
+  return tagString
+    .trim()
+    .split(/\s+/)
+    .filter((tag) => tag.length > 0);
+};
+
+// Main camera capture component
 const CameraCapture = () => {
+  // Refs for accessing video and canvas elements
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // State management for media stream, captured image, and loading state
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [bodyPartTags, setBodyPartTags] = useState("");
+  const [diagnosisTags, setDiagnosisTags] = useState("");
+  const [classificationTags, setClassificationTags] = useState("");
+  const [implantTags, setImplantTags] = useState("");
+  const [notes, setNotes] = useState("");
+  const [demographics, setDemographics] = useState<PatientDemographics>({
+    age: "",
+    gender: "",
+    clinicalHistory: "",
+  });
 
-  const { register, handleSubmit, setValue, formState: { errors }, control } = useForm();
+  // Get user email from auth store
+  const email = useAuthStore((state) => state.email);
 
+  // Start the webcam stream
   const startWebcam = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -27,9 +55,14 @@ const CameraCapture = () => {
       setMediaStream(stream);
     } catch (error) {
       console.error("Error accessing webcam", error);
+      toast({
+        title: "Camera Error",
+        description: "Failed to access webcam. Please check permissions.",
+      });
     }
   };
 
+  // Stop the webcam stream
   const stopWebcam = () => {
     if (mediaStream) {
       mediaStream.getTracks().forEach((track) => track.stop());
@@ -40,6 +73,7 @@ const CameraCapture = () => {
     }
   };
 
+  // Capture current frame from video
   const captureImage = () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
@@ -56,10 +90,72 @@ const CameraCapture = () => {
     }
   };
 
+  // Convert base64 to File object
+  const dataURLtoFile = (dataUrl: string, filename: string): File => {
+    const arr = dataUrl.split(",");
+    const mime = arr[0].match(/:(.*?);/)?.[1] || "image/jpeg";
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+  };
+
+  // Upload the captured image
+  const uploadImage = async () => {
+    if (!capturedImage) return;
+
+    try {
+      setIsUploading(true);
+      // Convert base64 image to File object
+      const imageFile = dataURLtoFile(capturedImage, "captured-image.jpg");
+
+      // Create FormData and append necessary data
+      const formData = new FormData();
+      formData.append("file", imageFile);
+
+      const metaData = {
+        owner: email,
+      };
+
+      formData.append("metadata", JSON.stringify(metaData));
+      console.log("FormData content:");
+      for (const [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+      // Make the upload request
+      const response = await api.post("/api/assets/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully!",
+      });
+      stopWebcam();
+
+      // Return the cloudinary URL if needed
+      return response.data.image.cloudinaryUrl;
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload the image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Reset captured image
   const resetImage = () => {
     setCapturedImage(null);
   };
 
+  // Save captured image locally
   const saveImage = () => {
     if (capturedImage) {
       const a = document.createElement("a");
@@ -69,41 +165,8 @@ const CameraCapture = () => {
     }
   };
 
-  const uploadImage = () => {
-    if (capturedImage) {
-      setIsUploading(true);
-    }
-  };
-
-  const onUploadAll = async (data: any) => {
-    if (capturedImage) {
-      try {
-        const formData = new FormData();
-        formData.append("image", capturedImage);  // Assuming the captured image is in base64 format
-        formData.append("bodyParts", data.bodyParts); // Example of tags
-        formData.append("classifications", data.classifications); // Example of tags
-        formData.append("notes", data.notes); // Any additional notes
-
-        // Perform your image upload logic here (e.g., API request)
-        console.log("Uploading image with tags", data);
-
-        // Example API call
-        // await fetch("/upload", {
-        //   method: "POST",
-        //   body: formData,
-        // });
-
-        console.log("Upload successful!");
-      } catch (error) {
-        console.error("Error uploading image", error);
-      } finally {
-        setIsUploading(false);
-      }
-    }
-  };
-
   return (
-    <Card className="w-72 max-w-md mx-auto">
+    <Card className="w-96 h-96 mx-auto overflow-y-scroll p-2">
       <CardContent className="p-6">
         {/* Video preview or captured image */}
         <div className="relative mb-4">
@@ -111,10 +174,11 @@ const CameraCapture = () => {
             ref={videoRef}
             autoPlay
             muted
-            className={`w-full rounded-lg ${capturedImage ? "hidden" : "block"}`}
+            className={`w-full rounded-lg ${
+              capturedImage ? "hidden" : "block"
+            }`}
           />
           <canvas ref={canvasRef} className="hidden" />
-          
           {capturedImage && (
             <img
               src={capturedImage}
@@ -123,7 +187,69 @@ const CameraCapture = () => {
             />
           )}
         </div>
+        {capturedImage && (
+          <div className="space-y-2 m-2">
+            <Input
+              value={bodyPartTags}
+              onChange={(e) => setBodyPartTags(e.target.value)}
+              placeholder="Body part tags (separate with spaces)"
+            />
+            <Input
+              value={diagnosisTags}
+              onChange={(e) => setDiagnosisTags(e.target.value)}
+              placeholder="Diagnosis tags (separate with spaces)"
+            />
+            <Input
+              value={classificationTags}
+              onChange={(e) => setClassificationTags(e.target.value)}
+              placeholder="Classification tags (separate with spaces)"
+            />
+            <Input
+              value={implantTags}
+              onChange={(e) => setImplantTags(e.target.value)}
+              placeholder="Implant tags (separate with spaces)"
+            />
 
+            {/* Patient Demographics */}
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                value={demographics.age}
+                onChange={(e) =>
+                  setDemographics((prev) => ({ ...prev, age: e.target.value }))
+                }
+                placeholder="Age"
+              />
+              <Input
+                value={demographics.gender}
+                onChange={(e) =>
+                  setDemographics((prev) => ({
+                    ...prev,
+                    gender: e.target.value,
+                  }))
+                }
+                placeholder="Gender"
+              />
+            </div>
+            <Input
+              value={demographics.clinicalHistory}
+              onChange={(e) =>
+                setDemographics((prev) => ({
+                  ...prev,
+                  clinicalHistory: e.target.value,
+                }))
+              }
+              placeholder="Clinical History"
+            />
+
+            {/* Notes */}
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Additional notes"
+              className="h-24"
+            />
+          </div>
+        )}
         {/* Control buttons */}
         <div className="flex justify-center gap-3">
           {capturedImage ? (
@@ -132,6 +258,7 @@ const CameraCapture = () => {
                 onClick={saveImage}
                 variant="default"
                 className="gap-2 px-2"
+                disabled={isUploading}
               >
                 <Download className="w-4 h-4" />
                 Save
@@ -140,14 +267,16 @@ const CameraCapture = () => {
                 onClick={uploadImage}
                 variant="default"
                 className="gap-2 px-2"
+                disabled={isUploading}
               >
                 <Upload className="w-4 h-4" />
-                Upload
+                {isUploading ? "Uploading..." : "Upload"}
               </Button>
               <Button
                 onClick={resetImage}
                 variant="destructive"
                 className="gap-2 px-2"
+                disabled={isUploading}
               >
                 <RefreshCw className="w-4 h-4" />
                 Reset
@@ -162,7 +291,7 @@ const CameraCapture = () => {
                   className="gap-2 px-2"
                 >
                   <Camera className="w-4 h-4" />
-                  Start Webcam
+                  Start Camera
                 </Button>
               ) : (
                 <>
@@ -187,9 +316,6 @@ const CameraCapture = () => {
             </>
           )}
         </div>
-
-        {/* Upload Form (Tags) */}
-        
       </CardContent>
     </Card>
   );

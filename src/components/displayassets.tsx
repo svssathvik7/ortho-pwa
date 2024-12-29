@@ -28,7 +28,7 @@ export default function AssetGrid(){
       fetch();
     }, [email]);
     return (
-        <div className="m-auto h-fit p-6 flex items-center justify-around w-screen flex-wrap max-h-72 overflow-y-scroll">
+        <div className="w-screen h-96 mx-auto overflow-y-scroll p-2 flex items-center justify-around">
           {images.map((image) => (
             <div
               key={image._id}
