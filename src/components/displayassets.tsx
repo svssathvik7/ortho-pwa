@@ -29,7 +29,7 @@ export default function AssetGrid(){
     }, [email]);
     return (
         <div className="w-screen h-96 mx-auto overflow-y-scroll p-2 flex items-center justify-around">
-          {images.map((image) => (
+          {images.length==0 ? <p>No assets to see!</p> : images.map((image) => (
             <div
               key={image._id}
               className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative"

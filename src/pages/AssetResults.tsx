@@ -7,9 +7,9 @@ export default function AssetDisplay(){
     const location = useLocation();
     const images = location.state?.images;
     return (
-        <div className="w-screen h-screen">
+        <div className="h-screen flex flex-col">
             <Navbar/>   
-            <div className="h-full w-screen flex items-center justify-around p-2 overflow-y-scroll">
+            <div className="flex items-center justify-center flex-grow mt-20">
                 {images.length==0 ? <Label className="text-3xl">No assets found!</Label> : <AssetResults images={images}/>}
             </div>
         </div>

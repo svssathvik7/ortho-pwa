@@ -31,7 +31,7 @@ export default function Navbar() {
           }
     }
     return (
-        <div className="flex items-center justify-around">
+        <div className="flex items-center justify-around fixed z-50 w-screen bg-white left-0 top-0 p-4">
             <p>OrthoPWA</p>
             <nav className="gap-4 w-1/3 flex items-center justify-around">
                 <Link to="/">Home</Link>

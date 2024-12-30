@@ -117,13 +117,17 @@ const CameraCapture = () => {
       formData.append("file", imageFile);
 
       const metaData = {
-        bodyParts: parseTagString(bodyPartTags),
-        diagnoses: parseTagString(diagnosisTags),
-        classifications: parseTagString(classificationTags),
-        implants: parseTagString(implantTags),
+        bodyParts: parseTagString(bodyPartTags).map((tag) => tag.toLowerCase()),
+        diagnoses: parseTagString(diagnosisTags).map((tag) => tag.toLowerCase()),
+        classifications: parseTagString(classificationTags).map((tag) => tag.toLowerCase()),
+        implants: parseTagString(implantTags).map((tag) => tag.toLowerCase()),
         notes,
-        patientDemographics: demographics,
-        owner: email,
+        patientDemographics: {
+          age: demographics.age.toLowerCase(),
+          gender: demographics.gender.toLowerCase(),
+          clinicalHistory: demographics.clinicalHistory.toLowerCase(),
+        },
+        owner: email ? email.toLowerCase() : "",
       };
 
       formData.append("metadata", JSON.stringify(metaData));

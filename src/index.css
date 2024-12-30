@@ -118,6 +118,19 @@
   }
 }
 
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+      display: none;
+  }
+ /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+}
+}
+
+
 
 .absolute-centre{
   position: absolute;
@@ -126,9 +139,4 @@
   right: 0;
   bottom: 0;
   margin: auto;
-}
-
-body{
-  height: 100dvh;
-  overflow-y: hidden;
 }
