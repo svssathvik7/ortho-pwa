@@ -1,4 +1,8 @@
 type ImageResult = {
+    _id: string;
+    createdAt: string;
+    sharedWith: string[];
+    owner: string;
     cloudinaryUrl: string;
     bodyParts: string[];
     diagnoses: string[];

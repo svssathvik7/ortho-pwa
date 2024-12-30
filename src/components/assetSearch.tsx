@@ -14,6 +14,7 @@ import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
 import ImageResult from "@/types/assetResults";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
 
 // Interface for our search filters
 interface SearchFilters {
@@ -23,6 +24,7 @@ interface SearchFilters {
   implants: string[];
   ageRange: [number, number];
   gender: string;
+  owner: string;
 }
 
 const ImageSearch = () => {
@@ -72,6 +74,7 @@ const ImageSearch = () => {
   };
   const navigate = useNavigate();
   // Function to perform the search
+  const email = useAuthStore((state)=>state.email);
   const handleSearch = async () => {
     try {
       setIsLoading(true);
@@ -84,6 +87,7 @@ const ImageSearch = () => {
         implants: selectedImplants,
         ageRange: ageRange,
         gender: selectedGender,
+        owner: email ? email : "NOAUTH"
       };
 
       // Make the API call

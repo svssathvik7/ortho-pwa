@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ImageResult from "@/types/assetResults";
+import { useAuthStore } from "@/store/authStore";
 
 interface AssetResultsProps {
   images: ImageResult[];
@@ -9,7 +10,7 @@ export default function AssetResults({ images }: AssetResultsProps) {
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
 
   const closeDetails = () => setSelectedImage(null);
-
+  const email = useAuthStore((state)=>state.email);
   return (
     <div className="relative w-full h-full">
       {/* Image Grid */}
@@ -64,6 +65,7 @@ export default function AssetResults({ images }: AssetResultsProps) {
                 <p>Implants: {selectedImage.implants.join(", ")}</p>
               )}
               {selectedImage.notes && <p>Notes: {selectedImage.notes}</p>}
+              {(selectedImage.owner!=email) ? <p>Asset by {selectedImage.owner}</p> : <></>}
             </div>
           </div>
         </div>
