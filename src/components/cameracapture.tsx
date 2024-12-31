@@ -228,6 +228,7 @@ const CameraCapture = () => {
                   setDemographics((prev) => ({ ...prev, age: e.target.value }))
                 }
                 placeholder="Age"
+                required
               />
               <Input
                 value={demographics.gender}
@@ -238,6 +239,7 @@ const CameraCapture = () => {
                   }))
                 }
                 placeholder="Gender"
+                required
               />
             </div>
             <Input

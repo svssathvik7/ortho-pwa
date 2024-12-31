@@ -320,6 +320,7 @@ const FileUploader = () => {
                 setDemographics((prev) => ({ ...prev, age: e.target.value }))
               }
               placeholder="Age"
+              required
             />
             <Input
               value={demographics.gender}
@@ -327,6 +328,7 @@ const FileUploader = () => {
                 setDemographics((prev) => ({ ...prev, gender: e.target.value }))
               }
               placeholder="Gender"
+              required
             />
           </div>
           <Input
