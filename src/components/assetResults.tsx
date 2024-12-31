@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ImageResult from "@/types/assetResults";
 import { useAuthStore } from "@/store/authStore";
-
+import { motion } from "framer-motion";
 interface AssetResultsProps {
   images: ImageResult[];
 }
@@ -10,7 +10,7 @@ export default function AssetResults({ images }: AssetResultsProps) {
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
 
   const closeDetails = () => setSelectedImage(null);
-  const email = useAuthStore((state)=>state.email);
+  const email = useAuthStore((state) => state.email);
   return (
     <div className="relative w-full h-full">
       {/* Image Grid */}
@@ -32,8 +32,16 @@ export default function AssetResults({ images }: AssetResultsProps) {
 
       {/* Modal for Selected Image */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
-          <div className="bg-white rounded-lg shadow-md w-3/4 max-w-2xl p-6 relative">
+        <motion.div
+          initial={{ opacity: 0, scale: 1 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            duration: 0.1, // Animation duration
+            ease: "easeOut", // Smooth easing curve
+          }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 w-screen"
+        >
+          <div className="bg-white rounded-lg shadow-md w-96 max-w-2xl p-6 relative max-h-screen h-fit overflow-y-scroll flex flex-col items-center justify-start">
             {/* Close Button */}
             <button
               onClick={closeDetails}
@@ -46,7 +54,7 @@ export default function AssetResults({ images }: AssetResultsProps) {
             <img
               src={selectedImage.cloudinaryUrl}
               alt="Selected medical image"
-              className="w-full h-auto object-contain mb-4"
+              className="w-64 aspect-square text-center h-auto object-contain mb-4"
             />
             <div>
               <h3 className="text-lg font-semibold">Patient Information</h3>
@@ -59,16 +67,22 @@ export default function AssetResults({ images }: AssetResultsProps) {
                 <p>Diagnoses: {selectedImage.diagnoses.join(", ")}</p>
               )}
               {selectedImage.classifications.length > 0 && (
-                <p>Classifications: {selectedImage.classifications.join(", ")}</p>
+                <p>
+                  Classifications: {selectedImage.classifications.join(", ")}
+                </p>
               )}
               {selectedImage.implants.length > 0 && (
                 <p>Implants: {selectedImage.implants.join(", ")}</p>
               )}
               {selectedImage.notes && <p>Notes: {selectedImage.notes}</p>}
-              {(selectedImage.owner!=email) ? <p>Asset by {selectedImage.owner}</p> : <></>}
+              {selectedImage.owner != email ? (
+                <p>Asset by {selectedImage.owner}</p>
+              ) : (
+                <></>
+              )}
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );

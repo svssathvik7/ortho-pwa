@@ -92,21 +92,21 @@ const AssetGrid = () => {
   // Rest of your component code remains the same...
 
   return (
-    <div className="w-screen h-fit mx-auto overflow-y-scroll p-2">
+    <div className="m-auto h-96 p-6 flex items-center justify-center w-screen flex-wrap">
       {!isOnline && (
         <div className="bg-yellow-100 p-2 mb-4 rounded-lg text-yellow-800">
           You're currently offline. Showing cached images.
         </div>
       )}
-      <div className="flex items-center justify-around">
+      <div className="flex-grow w-full flex justify-center flex-wrap gap-1 overflow-y-scroll">
         {/* Rest of your JSX remains the same... */}
         {images.length === 0 ? (
-          <p className="text-center col-span-full">No assets to see!</p>
+          <p className="text-center w-full">No assets to see!</p>
         ) : (
           images.map((image) => (
             <div
               key={image._id}
-              className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative p-2 min-h-72 w-72"
+              className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative p-2 w-3/4 lg:min-h-72 lg:w-72"
             >
               <img
                 src={image.cloudinaryUrl}

@@ -7,7 +7,8 @@ export default defineConfig({
   server: {
     headers: {
       'Service-Worker-Allowed': "/",
-    }
+    },
+    host: true
   },
   build: {
     rollupOptions: {

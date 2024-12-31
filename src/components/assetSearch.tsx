@@ -122,7 +122,7 @@ const ImageSearch = () => {
   ,[]);
 
   return (
-    <Card className="w-96 h-96 mx-auto overflow-y-scroll p-2 flex items-center justify-start">
+    <Card className={`w-96 h-96 mx-auto overflow-y-scroll p-2 flex items-center ${isOnline ? " justify-start " : " justify-center "}`}>
       {isOnline ? <div className="pt-64 w-full">
         <CardContent className="p-6 space-y-6 w-full">
           {/* Body Part Input */}
