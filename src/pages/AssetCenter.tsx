@@ -10,7 +10,12 @@ import { Button } from "@/components/ui/button"; // Import ShadCN Button
 export default function AssetUpload() {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const [isOnline,setIsOnline] = useState(navigator.onLine);
   const [view, setView] = useState<"upload" | "display" | "search">("upload"); // Add "search" to the state
+
+  useEffect(() => {
+    setIsOnline(navigator.onLine);
+  }, [navigator.onLine]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -28,7 +33,7 @@ export default function AssetUpload() {
             onClick={() => setView("upload")}
             className="px-2"
           >
-            Upload Asset
+            {isOnline ? "Upload Asset" : "Log in to upload"}
           </Button>
           <Button
             variant={view === "display" ? "default" : "outline"}
@@ -42,13 +47,13 @@ export default function AssetUpload() {
             onClick={() => setView("search")}
             className="px-2"
           >
-            Search Assets
+            {isOnline ? "Search Assets" : "Log in to search"}
           </Button>
         </div>
         <div className="mt-6">
           {view === "upload" && <AssetUploader />}
           {view === "display" && <AssetGrid />}
-          {view === "search" && <ImageSearch />} {/* Render ImageSearch for "search" view */}
+          {view === "search" && <ImageSearch />}
         </div>
       </div>
     </div>

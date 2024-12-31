@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -113,9 +113,17 @@ const ImageSearch = () => {
     }
   };
 
+  const [isOnline,setIsOnline] = useState(navigator.onLine);
+
+  useEffect(
+    ()=>{
+      setIsOnline(navigator.onLine);
+    }
+  ,[]);
+
   return (
     <Card className="w-96 h-96 mx-auto overflow-y-scroll p-2 flex items-center justify-start">
-      <div className="pt-64 w-full">
+      {isOnline ? <div className="pt-64 w-full">
         <CardContent className="p-6 space-y-6 w-full">
           {/* Body Part Input */}
           <div className="space-y-2 w-full">
@@ -395,7 +403,7 @@ const ImageSearch = () => {
             {isLoading ? "Searching..." : "Search Images"}
           </Button>
         </CardContent>
-      </div>
+      </div> : <p>Login to search assets.</p>}
     </Card>
   );
 };

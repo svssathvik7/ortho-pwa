@@ -4,7 +4,7 @@ import './index.css'
 import {BrowserRouter} from "react-router-dom";
 import App from './App.tsx'
 import { Toaster } from './components/ui/toaster.tsx';
-
+import { registerServiceWorker } from './utils/serviceWorkerRegistration.ts';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>
@@ -13,3 +13,5 @@ createRoot(document.getElementById('root')!).render(
     </BrowserRouter>
   </StrictMode>,
 )
+
+registerServiceWorker();

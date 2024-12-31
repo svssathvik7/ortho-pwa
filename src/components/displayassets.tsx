@@ -13,14 +13,46 @@ const AssetGrid = () => {
   const [images, setImages] = useState<ImageResult[]>([]);
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
   const [sharingEmail, setSharingEmail] = useState('');
-  const [sharingImageId, setSharingImageId] = useState<string | null>(null); // For tracking image id being shared
+  const [sharingImageId, setSharingImageId] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Register service worker
+  // useEffect(() => {
+  //   if ('serviceWorker' in navigator) {
+  //     navigator.serviceWorker.register('/service-worker.js')
+  //       .then(registration => {
+  //         console.log('ServiceWorker registration successful');
+  //       })
+  //       .catch(err => {
+  //         console.error('ServiceWorker registration failed:', err);
+  //       });
+  //   }
+  // }, []);
+
+  // Monitor online/offline status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await api.post("/api/assets/search", { owner: email });
+        const response = await api.get(`/api/assets/get-user-assets/${email}`);
         setImages(response.data.data.images);
       } catch (error: any) {
+        // If offline and we have cached images, don't show error
+        if (!navigator.onLine && images.length > 0) {
+          return;
+        }
         toast({
           title: error.response?.data || "An error occurred",
           variant: "destructive"
@@ -57,9 +89,17 @@ const AssetGrid = () => {
     }
   };
 
+  // Rest of your component code remains the same...
+
   return (
     <div className="w-screen h-fit mx-auto overflow-y-scroll p-2">
+      {!isOnline && (
+        <div className="bg-yellow-100 p-2 mb-4 rounded-lg text-yellow-800">
+          You're currently offline. Showing cached images.
+        </div>
+      )}
       <div className="flex items-center justify-around">
+        {/* Rest of your JSX remains the same... */}
         {images.length === 0 ? (
           <p className="text-center col-span-full">No assets to see!</p>
         ) : (
