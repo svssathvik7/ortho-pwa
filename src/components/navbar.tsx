@@ -32,8 +32,8 @@ export default function Navbar() {
     }
     return (
         <div className="flex items-center justify-around fixed z-50 w-screen bg-white left-0 top-0 p-4">
-            <Link to={"/"}>OrthoPWA</Link>
-            <nav className="gap-4 w-1/3 flex items-center justify-around">
+            <Link className="hidden lg:inline-block" to={"/"}>OrthoPWA</Link>
+            <nav className="flex items-center justify-around w-2/3">
                 <Link to="/">Home</Link>
                 <Link to="/asset/upload">Asset Manager</Link>
             </nav>
