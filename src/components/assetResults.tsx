@@ -2,6 +2,8 @@ import { useState } from "react";
 import ImageResult from "@/types/assetResults";
 import { useAuthStore } from "@/store/authStore";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge"; // Adjust this import based on your setup.
+
 interface AssetResultsProps {
   images: ImageResult[];
 }
@@ -11,6 +13,7 @@ export default function AssetResults({ images }: AssetResultsProps) {
 
   const closeDetails = () => setSelectedImage(null);
   const email = useAuthStore((state) => state.email);
+
   return (
     <div className="relative w-full h-full">
       {/* Image Grid */}
@@ -36,8 +39,8 @@ export default function AssetResults({ images }: AssetResultsProps) {
           initial={{ opacity: 0, scale: 1 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{
-            duration: 0.1, // Animation duration
-            ease: "easeOut", // Smooth easing curve
+            duration: 0.1,
+            ease: "easeOut",
           }}
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 w-screen"
         >
@@ -60,25 +63,60 @@ export default function AssetResults({ images }: AssetResultsProps) {
               <h3 className="text-lg font-semibold">Patient Information</h3>
               <p>Age: {selectedImage.patientDemographics.age}</p>
               <p>Gender: {selectedImage.patientDemographics.gender}</p>
+
               {selectedImage.bodyParts.length > 0 && (
-                <p>Body Parts: {selectedImage.bodyParts.join(", ")}</p>
-              )}
-              {selectedImage.diagnoses.length > 0 && (
-                <p>Diagnoses: {selectedImage.diagnoses.join(", ")}</p>
-              )}
-              {selectedImage.classifications.length > 0 && (
-                <p>
-                  Classifications: {selectedImage.classifications.join(", ")}
+                <p className="mt-2">
+                  Body Parts:
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedImage.bodyParts.map((part) => (
+                      <Badge key={part}>{part}</Badge>
+                    ))}
+                  </div>
                 </p>
               )}
-              {selectedImage.implants.length > 0 && (
-                <p>Implants: {selectedImage.implants.join(", ")}</p>
+
+              {selectedImage.diagnoses.length > 0 && (
+                <p className="mt-2">
+                  Diagnoses:
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedImage.diagnoses.map((diagnosis) => (
+                      <Badge key={diagnosis}>{diagnosis}</Badge>
+                    ))}
+                  </div>
+                </p>
               )}
-              {selectedImage.notes && <p>Notes: {selectedImage.notes}</p>}
-              {selectedImage.owner != email ? (
-                <p>Asset by {selectedImage.owner}</p>
-              ) : (
-                <></>
+
+              {selectedImage.classifications.length > 0 && (
+                <p className="mt-2">
+                  Classifications:
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedImage.classifications.map((classification) => (
+                      <Badge key={classification}>{classification}</Badge>
+                    ))}
+                  </div>
+                </p>
+              )}
+
+              {selectedImage.implants.length > 0 && (
+                <p className="mt-2">
+                  Implants:
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {selectedImage.implants.map((implant) => (
+                      <Badge key={implant}>{implant}</Badge>
+                    ))}
+                  </div>
+                </p>
+              )}
+
+              {selectedImage.notes && (
+                <div className="mt-4 p-3 border rounded-lg bg-yellow-100">
+                  <h4 className="font-semibold text-yellow-700">Notes:</h4>
+                  <p className="text-yellow-800">{selectedImage.notes}</p>
+                </div>
+              )}
+
+              {selectedImage.owner !== email && (
+                <p className="mt-2">Asset by {selectedImage.owner}</p>
               )}
             </div>
           </div>

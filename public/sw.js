@@ -19,6 +19,10 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
+      if (event.request.method === 'POST' && event.request.url.includes('search')) {
+        console.log('Ignoring POST request with "search" in the URL:', event.request.url);
+        return fetch(event.request);
+      }
       try {
         const cache = await caches.open(CACHE_NAME);
         console.log('Caching pre-defined URLs');
