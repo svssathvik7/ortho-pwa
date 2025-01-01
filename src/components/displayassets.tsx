@@ -83,18 +83,15 @@ const AssetGrid = () => {
     
     try {
       await api.post(`/api/assets/${sharingImageId}/revoke`, {
-        email: sharingEmail.trim()
+        email: sharingEmail.trim(),
+        permission: 'view',
+        owner: email
       });
-      
-      setImages(prevImages => prevImages.map(img => 
-        img._id === sharingImageId 
-          ? { ...img, sharedWith: (img.sharedWith || []).filter(email => email !== sharingEmail.trim()) }
-          : img
-      ));
       
       setSharingEmail('');
       toast({ title: "Access revoked successfully" });
     } catch (error) {
+      console.log(error);
       toast({
         title: "Failed to revoke access",
         variant: "destructive"
