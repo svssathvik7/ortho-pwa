@@ -199,7 +199,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="flex items-center justify-around fixed z-50 w-screen bg-white left-0 top-0 p-4">
+    <div className="flex items-center justify-around fixed z-50 w-screen bg-white p-4 top-0">
       <Link className="hidden lg:inline-block" to={"/"}>
         OrthoPWA
       </Link>

@@ -12,7 +12,7 @@ function App() {
     <Routes>
       <Route path='/' element={<Home/>}/>
       <Route path="/auth/:type" element={<Auth />} />
-      <Route path='/asset/upload' element={<AssetUpload/>}/>
+      <Route path='/assets/:type' element={<AssetUpload/>}/>
       <Route path='/asset' element={<AssetDisplay/>}/>
     </Routes>
   )
