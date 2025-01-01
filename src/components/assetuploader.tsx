@@ -8,7 +8,7 @@ export default function AssetUploader() {
     setIsOnline(navigator.onLine);
   }, [navigator.onLine]);
   return (
-    <div className="m-auto h-96 p-6 flex items-center justify-center w-screen flex-wrap">
+    <div className="m-auto flex-grow p-6 flex items-center justify-center w-screen flex-wrap overflow-y-scroll">
       {isOnline ? (
         <>
           <CameraCapture />

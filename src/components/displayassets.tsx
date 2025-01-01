@@ -177,7 +177,7 @@ const AssetGrid = () => {
   };
 
   return (
-    <div className="m-auto h-96 p-6 flex items-center justify-center w-screen flex-wrap overflow-y-scroll">
+    <div className="m-auto flex-grow p-6 flex items-center justify-center w-screen flex-wrap overflow-y-scroll">
       {!isOnline && (
         <div className="bg-yellow-100 p-2 mb-4 rounded-lg text-yellow-800">
           You're currently offline. Showing cached images.

@@ -20,7 +20,7 @@ export default function AssetUpload() {
   return (
     <div className="h-screen">
       <Navbar />
-      <div className="flex absolute-centre w-fit h-72 flex-col items-center justify-center">
+      <div className="flex absolute-centre w-fit flex-col items-center justify-center pt-40">
         <Tabs defaultValue="upload" className="w-fit flex items-center justify-center flex-col">
           <TabsList className="flex justify-center mt-4 space-x-4 w-fit h-fit">
             <TabsTrigger value="upload" disabled={!navigator.onLine}>
