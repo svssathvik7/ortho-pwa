@@ -46,7 +46,7 @@ const AssetGrid = () => {
     implantTags: [],
     patientAge: null,
     patientGender: "",
-    clinicalHistory: "",
+    clinicalHistory: ""
   });
 
   // Existing effects remain the same...
@@ -68,6 +68,7 @@ const AssetGrid = () => {
       try {
         const response = await api.get(`/api/assets/get-user-assets/${email}`);
         setImages(response.data.data.images);
+        console.log(response.data.data.images); 
       } catch (error:any) {
         if (!navigator.onLine && images.length > 0) {
           return;
@@ -145,16 +146,19 @@ const AssetGrid = () => {
       patientAge: image.patientDemographics.age,
       patientGender: image.patientDemographics.gender,
       notes: image.notes || "",
-      clinicalHistory: image.clinicalHistory || "",
+      clinicalHistory: image.clinicalHistory || ""
     });
   };
 
   // New handler for updating the asset
   const handleUpdateAsset = async () => {
     if (!editingImageId) return;
-
+    console.log(editFormState);
     try {
-      await api.post(`/api/assets/${editingImageId}/update`, editFormState);
+      await api.post(`/api/assets/${editingImageId}/update`, {
+        formState: editFormState,
+        owner: email
+      });
 
       setImages((prevImages) =>
         prevImages.map((img) =>
@@ -186,7 +190,7 @@ const AssetGrid = () => {
           images.map((image) => (
             <div
               key={image._id}
-              className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative p-2 w-3/4 lg:min-h-72 lg:w-72"
+              className="group bg-white shadow-lg rounded-lg overflow-y-scroll border border-gray-200 relative p-2 w-full lg:min-h-fit lg:w-72"
             >
               <img
                 src={image.cloudinaryUrl}
@@ -196,16 +200,19 @@ const AssetGrid = () => {
               <div className="absolute inset-0 bg-black bg-opacity-75 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-4">
                 <div className="space-y-2">
                   <p className="text-gray-200">
+                    Body part tags: {image.bodyParts.join(", ") || "None"}
+                  </p>
+                  <p className="text-gray-200">
                     Diagnosis Tags: {image.diagnoses.join(", ") || "None"}
                   </p>
                   <p className="text-gray-200">
                     Implant Tags: {image.implants.join(", ") || "None"}
                   </p>
                   <p className="text-gray-200">
-                    Patient Age: {image.patientDemographics.age || "Unknown"}
+                    Patient Age: {image?.patientDemographics?.age || "Unknown"}
                   </p>
                   <p className="text-gray-200">
-                    Patient Gender: {image.patientDemographics.gender || "Unknown"}
+                    Patient Gender: {image?.patientDemographics?.gender || "Unknown"}
                   </p>
                   <p className="text-gray-200">
                     Clinical History:{" "}
@@ -346,10 +353,10 @@ const AssetGrid = () => {
                             }
                             className="w-full p-2 border rounded"
                           >
-                            <option value="">Select Gender</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
+                            <option value={""}>Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
                           </select>
                         </div>
                         <div>
@@ -367,6 +374,7 @@ const AssetGrid = () => {
                             placeholder="Add clinical history..."
                           />
                         </div>
+                        <Button onClick={handleUpdateAsset}>Update</Button>
                       </DialogContent>
                     </Dialog>
 
