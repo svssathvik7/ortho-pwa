@@ -6,6 +6,7 @@ import { Share2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ImageResult from '@/types/assetResults';
 
 const AssetGrid = () => {
@@ -16,20 +17,7 @@ const AssetGrid = () => {
   const [sharingImageId, setSharingImageId] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  // Register service worker
-  // useEffect(() => {
-  //   if ('serviceWorker' in navigator) {
-  //     navigator.serviceWorker.register('/service-worker.js')
-  //       .then(registration => {
-  //         console.log('ServiceWorker registration successful');
-  //       })
-  //       .catch(err => {
-  //         console.error('ServiceWorker registration failed:', err);
-  //       });
-  //   }
-  // }, []);
-
-  // Monitor online/offline status
+  // Existing online/offline monitoring code remains the same...
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -43,13 +31,13 @@ const AssetGrid = () => {
     };
   }, []);
 
+  // Existing fetch images effect remains the same...
   useEffect(() => {
     const fetchImages = async () => {
       try {
         const response = await api.get(`/api/assets/get-user-assets/${email}`);
         setImages(response.data.data.images);
       } catch (error: any) {
-        // If offline and we have cached images, don't show error
         if (!navigator.onLine && images.length > 0) {
           return;
         }
@@ -62,9 +50,10 @@ const AssetGrid = () => {
     fetchImages();
   }, [email]);
 
+  // Handle sharing access
   const handleShareAccess = async () => {
     if (!sharingEmail.trim() || !sharingImageId) return;
-    console.log(sharingImageId);
+    
     try {
       await api.post(`/api/assets/${sharingImageId}/share`, {
         email: sharingEmail.trim(),
@@ -79,7 +68,6 @@ const AssetGrid = () => {
       ));
       
       setSharingEmail('');
-      setSharingImageId(null); // Reset sharingImageId
       toast({ title: "Access granted successfully" });
     } catch (error) {
       toast({
@@ -89,7 +77,30 @@ const AssetGrid = () => {
     }
   };
 
-  // Rest of your component code remains the same...
+  // Handle revoking access
+  const handleRevokeAccess = async () => {
+    if (!sharingEmail.trim() || !sharingImageId) return;
+    
+    try {
+      await api.post(`/api/assets/${sharingImageId}/revoke`, {
+        email: sharingEmail.trim()
+      });
+      
+      setImages(prevImages => prevImages.map(img => 
+        img._id === sharingImageId 
+          ? { ...img, sharedWith: (img.sharedWith || []).filter(email => email !== sharingEmail.trim()) }
+          : img
+      ));
+      
+      setSharingEmail('');
+      toast({ title: "Access revoked successfully" });
+    } catch (error) {
+      toast({
+        title: "Failed to revoke access",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <div className="m-auto h-96 p-6 flex items-center justify-center w-screen flex-wrap">
@@ -99,7 +110,6 @@ const AssetGrid = () => {
         </div>
       )}
       <div className="flex-grow w-full flex justify-center flex-wrap gap-1 overflow-y-scroll">
-        {/* Rest of your JSX remains the same... */}
         {images.length === 0 ? (
           <p className="text-center w-full">No assets to see!</p>
         ) : (
@@ -127,20 +137,23 @@ const AssetGrid = () => {
                   <p className="text-gray-400 text-sm">
                     Created At: {new Date(image.createdAt).toLocaleDateString()}
                   </p>
-                  {(email!=image.owner) ? <p className='text-gray-400 text-sm'>Asset by {image.owner}</p> : <></>}
+                  {(email !== image.owner) && <p className="text-gray-400 text-sm">Asset by {image.owner}</p>}
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
-                  <Dialog open={sharingImageId === image._id} onOpenChange={(isOpen) => { if (!isOpen) setSharingImageId(null); }}>
+                  <Dialog 
+                    open={sharingImageId === image._id} 
+                    onOpenChange={(isOpen) => { if (!isOpen) setSharingImageId(null); }}
+                  >
                     <DialogTrigger asChild>
                       <Button 
                         variant="secondary" 
                         size="sm" 
-                        className={`${email!=image?.owner ? " hidden " : " flex "} items-center gap-2 px-2`}
+                        className={`${email !== image?.owner ? "hidden" : "flex"} items-center gap-2 px-2`}
                         onClick={() => {
                           setSelectedImage(image);
-                          setSharingImageId(image._id); // Set the image ID when share button is clicked
+                          setSharingImageId(image._id);
                         }}
-                        disabled={email != image?.owner}
+                        disabled={email !== image?.owner}
                       >
                         <Share2 className="w-4 h-4" />
                         Share
@@ -148,20 +161,46 @@ const AssetGrid = () => {
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Share Access</DialogTitle>
+                        <DialogTitle>Manage Access</DialogTitle>
                       </DialogHeader>
-                      <div className="flex gap-2">
-                        <Input
-                          type="email"
-                          value={sharingEmail}
-                          onChange={(e) => setSharingEmail(e.target.value)}
-                          placeholder="Enter email"
-                          onKeyPress={(e) => e.key === 'Enter' && handleShareAccess()}
-                        />
-                        <Button onClick={handleShareAccess} className='px-2'>
-                          Share
-                        </Button>
-                      </div>
+                      <Tabs defaultValue="share">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="share">Share Access</TabsTrigger>
+                          <TabsTrigger value="revoke">Revoke Access</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="share">
+                          <div className="flex gap-2">
+                            <Input
+                              type="email"
+                              value={sharingEmail}
+                              onChange={(e) => setSharingEmail(e.target.value)}
+                              placeholder="Enter email to share"
+                              onKeyPress={(e) => e.key === 'Enter' && handleShareAccess()}
+                            />
+                            <Button onClick={handleShareAccess} className="px-2">
+                              Share
+                            </Button>
+                          </div>
+                        </TabsContent>
+                        <TabsContent value="revoke">
+                          <div className="flex gap-2">
+                            <Input
+                              type="email"
+                              value={sharingEmail}
+                              onChange={(e) => setSharingEmail(e.target.value)}
+                              placeholder="Enter email to revoke"
+                              onKeyPress={(e) => e.key === 'Enter' && handleRevokeAccess()}
+                            />
+                            <Button 
+                              onClick={handleRevokeAccess} 
+                              variant="destructive" 
+                              className="px-2"
+                            >
+                              Revoke
+                            </Button>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
                     </DialogContent>
                   </Dialog>
                 </div>
