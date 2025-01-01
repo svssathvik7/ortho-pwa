@@ -2,12 +2,20 @@ import React, { useEffect, useState } from 'react';
 import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
-import { Share2 } from 'lucide-react';
+import { Share2, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import ImageResult from '@/types/assetResults';
+
+// Interface for edit form state to ensure type safety
+interface EditFormState {
+  bodyParts: string[];
+  classifications: string[];
+  notes: string;
+}
 
 const AssetGrid = () => {
   const email = useAuthStore((state) => state.email);
@@ -16,8 +24,16 @@ const AssetGrid = () => {
   const [sharingEmail, setSharingEmail] = useState('');
   const [sharingImageId, setSharingImageId] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  // New state for edit functionality
+  const [editingImageId, setEditingImageId] = useState<string | null>(null);
+  const [editFormState, setEditFormState] = useState<EditFormState>({
+    bodyParts: [],
+    classifications: [],
+    notes: ''
+  });
 
-  // Existing online/offline monitoring code remains the same...
+  // Existing effects remain the same...
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -31,7 +47,6 @@ const AssetGrid = () => {
     };
   }, []);
 
-  // Existing fetch images effect remains the same...
   useEffect(() => {
     const fetchImages = async () => {
       try {
@@ -50,7 +65,7 @@ const AssetGrid = () => {
     fetchImages();
   }, [email]);
 
-  // Handle sharing access
+  // Existing share and revoke handlers remain the same...
   const handleShareAccess = async () => {
     if (!sharingEmail.trim() || !sharingImageId) return;
     
@@ -77,7 +92,6 @@ const AssetGrid = () => {
     }
   };
 
-  // Handle revoking access
   const handleRevokeAccess = async () => {
     if (!sharingEmail.trim() || !sharingImageId) return;
     
@@ -94,6 +108,40 @@ const AssetGrid = () => {
       console.log(error);
       toast({
         title: "Failed to revoke access",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // New handler for initializing edit mode
+  const handleEditClick = (image: ImageResult) => {
+    setEditingImageId(image._id);
+    setEditFormState({
+      bodyParts: image.bodyParts,
+      classifications: image.classifications,
+      notes: image.notes || ''
+    });
+  };
+
+  // New handler for updating the asset
+  const handleUpdateAsset = async () => {
+    if (!editingImageId) return;
+    
+    try {
+      await api.post(`/api/assets/${editingImageId}/update`, editFormState);
+      
+      // Update local state to reflect changes
+      setImages(prevImages => prevImages.map(img => 
+        img._id === editingImageId 
+          ? { ...img, ...editFormState }
+          : img
+      ));
+      
+      setEditingImageId(null);
+      toast({ title: "Asset updated successfully" });
+    } catch (error) {
+      toast({
+        title: "Failed to update asset",
         variant: "destructive"
       });
     }
@@ -137,6 +185,72 @@ const AssetGrid = () => {
                   {(email !== image.owner) && <p className="text-gray-400 text-sm">Asset by {image.owner}</p>}
                 </div>
                 {isOnline && <div className="flex justify-end gap-2 mt-4">
+                  {/* Edit Dialog */}
+                  <Dialog 
+                    open={editingImageId === image._id}
+                    onOpenChange={(isOpen) => { if (!isOpen) setEditingImageId(null); }}
+                  >
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="secondary" 
+                        size="sm" 
+                        className={`${email !== image?.owner ? "hidden" : "flex"} items-center gap-2 px-2`}
+                        onClick={() => handleEditClick(image)}
+                        disabled={email !== image?.owner}
+                      >
+                        <Edit className="w-4 h-4" />
+                        Edit
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Edit Asset</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium">Body Parts (comma-separated)</label>
+                          <Input
+                            value={editFormState.bodyParts.join(", ")}
+                            onChange={(e) => setEditFormState(prev => ({
+                              ...prev,
+                              bodyParts: e.target.value.split(",").map(part => part.trim())
+                            }))}
+                            placeholder="e.g. Head, Neck, Shoulder"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Classifications (comma-separated)</label>
+                          <Input
+                            value={editFormState.classifications.join(", ")}
+                            onChange={(e) => setEditFormState(prev => ({
+                              ...prev,
+                              classifications: e.target.value.split(",").map(cls => cls.trim())
+                            }))}
+                            placeholder="e.g. X-Ray, MRI"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Notes</label>
+                          <Textarea
+                            value={editFormState.notes}
+                            onChange={(e) => setEditFormState(prev => ({
+                              ...prev,
+                              notes: e.target.value
+                            }))}
+                            placeholder="Add notes about this asset..."
+                          />
+                        </div>
+                        <Button 
+                          onClick={handleUpdateAsset}
+                          className="w-full"
+                        >
+                          Update Asset
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Existing Share Dialog */}
                   <Dialog 
                     open={sharingImageId === image._id} 
                     onOpenChange={(isOpen) => { if (!isOpen) setSharingImageId(null); }}
