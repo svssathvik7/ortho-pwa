@@ -1,32 +1,31 @@
-// public/sw.js
-
+// Define the cache name for storing assets
 const CACHE_NAME = 'asset-grid-cache-v1';
-console.log("I am service worker");
+console.log("Service Worker Initialized");
 
-// Expand the URLs to cache to include your application's core assets
+// Define the specific API endpoint we want to cache
+const CACHED_API_ENDPOINT = '/api/assets/get-user-assets';
+
+// Define core application assets to cache during installation
 const urlsToCache = [
   '/',
-  '/asset/upload',
   '/index.html',
   '/manifest.json',
-  // Add your application's main JavaScript and CSS files
+  // Add other static assets but remove dynamic routes
   '/src/main.tsx',
   '/src/App.tsx',
   '/src/components/displayassets.tsx'
 ];
 
-// Installation phase - cache core assets
+// Installation event handler
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
-      if (event.request.method === 'POST') {
-        console.log('Ignoring POST request with "search" in the URL:', event.request.url);
-        return fetch(event.request);
-      }
       try {
+        // Open our cache and store initial assets
         const cache = await caches.open(CACHE_NAME);
-        console.log('Caching pre-defined URLs');
+        console.log('Caching initial static assets');
         await cache.addAll(urlsToCache);
+        // Force the waiting service worker to become the active service worker
         await self.skipWaiting();
       } catch (error) {
         console.error('Cache initialization failed:', error);
@@ -35,20 +34,23 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activation phase - clean old caches
+// Activation event handler
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
       try {
+        // Get all existing cache keys
         const cacheKeys = await caches.keys();
+        // Remove any old caches
         await Promise.all(
           cacheKeys.map(key => {
             if (key !== CACHE_NAME) {
-              console.log('Deleting old cache:', key);
+              console.log('Removing old cache:', key);
               return caches.delete(key);
             }
           })
         );
+        // Take control of all clients immediately
         await self.clients.claim();
       } catch (error) {
         console.error('Cache cleanup failed:', error);
@@ -57,62 +59,56 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event handler - implement network-first strategy with fallback to cache
+// Fetch event handler with selective interception
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    (async () => {
-      try {
-        const cache = await caches.open(CACHE_NAME);
-        
-        // First, try to get the resource from the network
+  // First, check if this is our target API endpoint
+  if (event.request.url.includes(CACHED_API_ENDPOINT)) {
+    // Handle the assets API request with cache strategy
+    event.respondWith(
+      (async () => {
         try {
-          console.log('Fetching resource:', event.request.url);
-          const networkResponse = await fetch(event.request);
+          const cache = await caches.open(CACHE_NAME);
           
-          // If successful, cache the response for future offline use
-          if (networkResponse.ok) {
-            // Only cache successful responses
-            console.log('Caching new resource:', event.request.url);
-            await cache.put(event.request, networkResponse.clone());
-          }
-          
-          return networkResponse;
-        } catch (networkError) {
-          console.log('Network request failed, falling back to cache');
-          
-          // If network request fails, try to get it from cache
-          const cachedResponse = await cache.match(event.request);
-          
-          if (cachedResponse) {
-            console.log('Found in cache:', event.request.url);
-            return cachedResponse;
-          }
-
-          // For navigation requests (HTML pages), return the offline page
-          if (event.request.mode === 'navigate') {
-            const offlineResponse = await cache.match('/asset/search');
-            if (offlineResponse) {
-              return offlineResponse;
+          // Try network first
+          try {
+            console.log('Fetching assets from network:', event.request.url);
+            const networkResponse = await fetch(event.request);
+            
+            if (networkResponse.ok) {
+              // Cache the successful response
+              console.log('Caching new assets response');
+              await cache.put(event.request, networkResponse.clone());
             }
+            
+            return networkResponse;
+          } catch (networkError) {
+            console.log('Network request failed, checking cache for assets');
+            
+            // Try to get from cache
+            const cachedResponse = await cache.match(event.request);
+            
+            if (cachedResponse) {
+              console.log('Returning cached assets');
+              return cachedResponse;
+            }
+            
+            // If not in cache, throw error
+            throw new Error('Assets not available offline');
           }
-          
-          // If not in cache and network failed, throw error
-          throw new Error('Resource not found in cache');
-        }
-      } catch (error) {
-        console.error('Fetch handling failed:', error);
-        
-        // If all else fails, return a simple offline message for HTML requests
-        if (event.request.mode === 'navigate') {
-          return new Response('You are offline and the page is not cached.', {
-            headers: { 'Content-Type': 'text/html' }
+        } catch (error) {
+          console.error('Assets fetch failed:', error);
+          // Return an empty array or appropriate fallback for the assets endpoint
+          return new Response(JSON.stringify([]), {
+            headers: { 'Content-Type': 'application/json' }
           });
         }
-        
-        throw error;
-      }
-    })()
-  );
+      })()
+    );
+  } else {
+    // For all other requests, let them pass through normally
+    // This ensures we don't interfere with other API calls or dynamic content
+    return;
+  }
 });
 
 // Handle messages from the client

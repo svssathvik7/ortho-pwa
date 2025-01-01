@@ -103,6 +103,7 @@ export default function Account() {
 
     return true;
   };
+  const login = useAuthStore((state)=>state.login);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +131,9 @@ export default function Account() {
         title: "Success",
         description: "Account settings updated successfully",
       });
+
+      login(email || "email", formData.dp);
+      
 
       setFormData((prev) => ({
         ...prev,
