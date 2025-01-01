@@ -19,7 +19,7 @@ const urlsToCache = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
-      if (event.request.method === 'POST' && event.request.url.includes('search')) {
+      if (event.request.method === 'POST') {
         console.log('Ignoring POST request with "search" in the URL:', event.request.url);
         return fetch(event.request);
       }

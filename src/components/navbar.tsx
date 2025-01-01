@@ -1,5 +1,4 @@
 import { useAuthStore } from "@/store/authStore";
-import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "@/hooks/use-toast";
@@ -10,13 +9,18 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"; // ShadCN Tabs
-import { User, Folder, Search, Upload, Home } from "lucide-react";
+import {
+  User,
+  Folder,
+  Search,
+  Upload,
+  Home,
+  DoorOpen,
+  DoorClosed,
+  User2,
+} from "lucide-react";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { useState, useEffect } from "react";
-import AssetUploader from "@/components/assetuploader";
-import AssetGrid from "@/components/displayassets";
-import ImageSearch from "@/components/assetSearch";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -24,6 +28,7 @@ export default function Navbar() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const logout = useAuthStore((state) => state.logout);
   const [isMobile, setIsMobile] = useState(false);
+  const dp = useAuthStore((state) => state.dp); // Get dp directly from the store
 
   const handleLogout = async () => {
     try {
@@ -55,8 +60,11 @@ export default function Navbar() {
     isMobile ? (
       <Dialog>
         <DialogTrigger asChild>
-          <Avatar className="cursor-pointer">
-            <AvatarImage src="https://github.com/shadcn.png" />
+          <Avatar className="cursor-pointer flex items-center justify-center text-center w-full">
+            <AvatarImage
+              className="dp-img w-12 h-12 object-cover self-center"
+              src={dp ? dp : "https://github.com/shadcn.png"}
+            />
             <AvatarFallback>
               <User className="w-5 h-5" />
             </AvatarFallback>
@@ -66,23 +74,26 @@ export default function Navbar() {
           <div className="flex flex-col space-y-2">
             <Link
               to="/account"
-              className="px-4 py-2 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-4 py-2 hover:bg-gray-100 rounded-md transition-colors flex items-center space-x-2 justify-start"
             >
-              Account
+              <User className="w-5 h-5" />
+              <span>Account</span>
             </Link>
             {isAuthenticated ? (
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-center hover:bg-gray-100 rounded-md transition-colors text-red-600"
+                className="px-4 py-2 text-center hover:bg-gray-100 rounded-md transition-colors text-red-600 flex items-center space-x-2 justify-start"
               >
-                Logout
+                <DoorOpen className="w-5 h-5" />
+                <p>logout</p>
               </button>
             ) : (
               <Link
                 to="/auth/login"
-                className="px-4 py-2 hover:bg-gray-100 rounded-md transition-colors"
+                className="px-4 py-2 hover:bg-gray-100 rounded-md transition-colors flex items-center space-x-2 justify-start"
               >
-                Login
+                <DoorClosed className="w-5 h-5" />
+                <p>login</p>
               </Link>
             )}
           </div>
@@ -92,7 +103,10 @@ export default function Navbar() {
       <HoverCard>
         <HoverCardTrigger asChild>
           <Avatar className="cursor-pointer">
-            <AvatarImage src="https://github.com/shadcn.png" />
+            <AvatarImage
+              className="w-12 h-12 object-cover"
+              src={dp ? dp : "https://github.com/shadcn.png"}
+            />
             <AvatarFallback>
               <User className="w-5 h-5" />
             </AvatarFallback>
@@ -102,23 +116,26 @@ export default function Navbar() {
           <div className="flex flex-col space-y-2">
             <Link
               to="/account"
-              className="px-4 py-2 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-2 text-center hover:bg-gray-100 rounded-md transition-colors flex items-center justify-start gap-1"
             >
-              Account
+              <User2 className="w-10 h-10 text-black" />
+              <span>Account</span>
             </Link>
             {isAuthenticated ? (
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-center hover:bg-gray-100 rounded-md transition-colors text-red-600"
+                className="px-2 text-center hover:bg-gray-100 rounded-md transition-colors text-red-600 flex items-center justify-start gap-1"
               >
-                Logout
+                <DoorOpen size={15} className="text-red" />
+                <span>logout</span>
               </button>
             ) : (
               <Link
                 to="/auth/login"
-                className="px-4 py-2 hover:bg-gray-100 rounded-md transition-colors"
+                className="px-2 text-center hover:bg-gray-100 rounded-md transition-colors flex items-center justify-start gap-1"
               >
-                Login
+                <DoorClosed size={15} className="text-black" />
+                <span>login</span>
               </Link>
             )}
           </div>

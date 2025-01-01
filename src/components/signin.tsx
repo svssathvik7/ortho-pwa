@@ -19,7 +19,7 @@ const SigninForm = () => {
     // Handle form submission logic here
     try {
       const response = (await axios.post(`${backendUrl}/api/auth/login`,formData)).data;
-      login(response.data.email);
+      login(response.data.email,response.data.dp);
       toast(
         {
           title: "Successfully loggedin!"
@@ -85,7 +85,7 @@ const SigninForm = () => {
           </div>
           <div className='w-full h-fit p-2 flex items-center justify-end'>
               <p>Don't have an account?</p>
-              <Button><Link to='/auth/register' className='px-4 mx-1'>Register</Link></Button>
+              <Link to='/auth/register' className='px-4 mx-1'><Button className='px-2'>Register</Button></Link>
           </div>
 
           <Button type="submit" className="w-full">
