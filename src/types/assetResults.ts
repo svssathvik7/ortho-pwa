@@ -9,6 +9,7 @@ type ImageResult = {
     classifications: string[];
     implants: string[];
     notes: string;
+    clinicalHistory: string;
     patientDemographics: {
       age: number;
       gender: string;
