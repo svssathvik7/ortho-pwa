@@ -136,7 +136,7 @@ const AssetGrid = () => {
                   </p>
                   {(email !== image.owner) && <p className="text-gray-400 text-sm">Asset by {image.owner}</p>}
                 </div>
-                <div className="flex justify-end gap-2 mt-4">
+                {isOnline && <div className="flex justify-end gap-2 mt-4">
                   <Dialog 
                     open={sharingImageId === image._id} 
                     onOpenChange={(isOpen) => { if (!isOpen) setSharingImageId(null); }}
@@ -200,7 +200,7 @@ const AssetGrid = () => {
                       </Tabs>
                     </DialogContent>
                   </Dialog>
-                </div>
+                </div>}
               </div>
             </div>
           ))
