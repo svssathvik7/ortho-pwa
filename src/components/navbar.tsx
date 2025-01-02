@@ -60,9 +60,9 @@ export default function Navbar() {
     isMobile ? (
       <Dialog>
         <DialogTrigger asChild>
-          <Avatar className="cursor-pointer flex items-center justify-center text-center w-full">
+        <Avatar className="cursor-pointer">
             <AvatarImage
-              className="dp-img w-12 h-12 object-cover self-center"
+              className="w-12 h-12 object-cover"
               src={dp ? dp : "https://github.com/shadcn.png"}
             />
             <AvatarFallback>

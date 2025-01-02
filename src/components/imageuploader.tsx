@@ -16,6 +16,7 @@ import { Textarea } from "./ui/textarea";
 import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 // Define constants for file validation
 const ACCEPTED_FILE_TYPES = {
@@ -322,14 +323,21 @@ const FileUploader = () => {
               placeholder="Age"
               required
             />
-            <Input
+            <Select
               value={demographics.gender}
-              onChange={(e) =>
-                setDemographics((prev) => ({ ...prev, gender: e.target.value }))
+              onValueChange={(value) =>
+                setDemographics((prev) => ({ ...prev, gender: value }))
               }
-              placeholder="Gender"
-              required
-            />
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select gender" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="male">Male</SelectItem>
+                <SelectItem value="female">Female</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Input
             value={demographics.clinicalHistory}
