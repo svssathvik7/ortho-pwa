@@ -309,8 +309,8 @@ const CameraCapture = () => {
 
   // Modified JSX for better mobile support
   return (
-    <Card className="w-full max-w-96 mx-auto overflow-y-scroll p-2">
-      <CardContent className="p-6">
+    <Card className="w-full lg:max-w-96 h-max-screen mx-auto overflow-y-scroll p-2">
+      <CardContent className="lg:p-6">
       <div className="relative mb-4 aspect-video bg-gray-100 rounded-lg overflow-hidden">
           {(!mediaStream && !capturedImage) && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">

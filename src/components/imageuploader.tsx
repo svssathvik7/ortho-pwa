@@ -199,7 +199,7 @@ const FileUploader = () => {
   };
 
   return (
-    <Card className="w-96 h-96 mx-auto overflow-y-scroll p-2">
+    <Card className="w-full max-w-96 h-max-screen mx-auto overflow-y-scroll p-2">
       <CardContent className="space-y-4">
         {/* Dropzone */}
         <div

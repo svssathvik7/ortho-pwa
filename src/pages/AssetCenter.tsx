@@ -42,7 +42,7 @@ export default function AssetCenter() {
   return (
     <div>
       <Navbar/>
-      <div className='mt-20'>
+      <div className='mt-20 flex items-center justify-center w-screen lg:w-full'>
         {isAuthenticated && renderComponent()}   
       </div>
     </div>
