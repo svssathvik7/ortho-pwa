@@ -2,7 +2,7 @@ import { useAuthStore } from "@/store/authStore";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "@/hooks/use-toast";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   HoverCard,
   HoverCardContent,
@@ -19,7 +19,6 @@ import {
   DoorClosed,
   User2,
 } from "lucide-react";
-import { AvatarImage } from "@radix-ui/react-avatar";
 import { useState, useEffect } from "react";
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -217,12 +216,12 @@ export default function Navbar() {
 
   return (
     <div className="flex items-center justify-around fixed z-50 w-screen bg-white p-4 top-0 left-0">
-      <Link className="hidden lg:inline-block" to={"/"}>
+      <Link className="hidden lg:inline-block font-bold" to={"/"}>
         OrthoPWA
       </Link>
       <nav className="flex items-center justify-around space-x-4 gap-4">
         <Link to="/" className="w-fit flex items-center space-x-2">
-          <Home className="w-5 h-5" />
+          <Home className="w-5 h-5"/>
           <span>Home</span>
         </Link>
         <AssetManagerMenu />
