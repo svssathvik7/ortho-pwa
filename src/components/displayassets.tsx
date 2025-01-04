@@ -8,6 +8,18 @@ import { Badge } from "./ui/badge";
 import { Bolt, Hand, Split, Search } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import InsightViewer, { useImage } from "@lunit/insight-viewer";
+
+const DICOMDisplay = (url:any) => {
+  const { image } = useImage({ wadouri: url });
+  return <InsightViewer image={image} />;
+};
+
+const IsDicom = (url: string): boolean => {
+  return (
+    url.endsWith(".dcm") || url.endsWith(".dicom") || url.endsWith(".dicm")
+  );
+};
 
 const AssetGrid = () => {
   const email = useAuthStore((state) => state.email);
@@ -60,12 +72,17 @@ const AssetGrid = () => {
               key={image._id}
               className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative p-2 w-full lg:w-72"
             >
-              <img
-                src={image.cloudinaryUrl}
-                alt={image.notes || "Asset Image"}
-                className="w-full aspect-square object-cover max-h-72 cursor-pointer"
-                onClick={() => setSelectedImage(image)}
-              />
+              {!IsDicom(image.cloudinaryUrl) ? (
+                <img
+                  src={image.cloudinaryUrl}
+                  alt={image.notes || "Asset Image"}
+                  className="w-full aspect-square object-cover max-h-72 cursor-pointer"
+                  onClick={() => setSelectedImage(image)}
+                />
+              ) : (
+                <DICOMDisplay url={image.cloudinaryUrl} />
+              )}
+
               <div className="hidden w-full lg:flex items-center justify-around absolute top-0 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2 bg-black bg-opacity-50">
                 <HoverCard>
                   <HoverCardTrigger>
@@ -248,8 +265,7 @@ const AssetGrid = () => {
                 </TabsContent>
                 <TabsContent value="implants">
                   <span className="text-black text-xl">
-                    {selectedImage.implants.length == 0 && "No"}{" "}
-                    Implant tags
+                    {selectedImage.implants.length == 0 && "No"} Implant tags
                   </span>
                   <div className="flex flex-wrap gap-1">
                     {selectedImage.implants.map((implant) => (

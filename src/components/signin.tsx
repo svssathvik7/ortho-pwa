@@ -85,7 +85,7 @@ const SigninForm = () => {
           </div>
           <div className='w-full h-fit p-2 flex items-center justify-end'>
               <p>Don't have an account?</p>
-              <Link to='/auth/register' className='px-4 mx-1'><Button className='px-2'>Register</Button></Link>
+              <Link to='/auth/register' className='px-4 mx-1'><Button className='px-2' type='button'>Register</Button></Link>
           </div>
 
           <Button type="submit" className="w-full">

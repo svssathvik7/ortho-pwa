@@ -10,6 +10,9 @@ export default defineConfig({
     },
     host: true
   },
+  optimizeDeps: {
+    include: ["@lunit/insight-viewer"],
+  },
   build: {
     rollupOptions: {
       input: {

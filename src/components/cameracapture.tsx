@@ -14,32 +14,14 @@ import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-
-interface PatientDemographics {
-  age: string;
-  gender: string;
-  clinicalHistory: string;
-}
-
-// Configuration for different camera environments
-const CAMERA_CONSTRAINTS = {
-  // Default constraints for desktop
-  desktop: {
-    video: {
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-    },
-  },
-  // Mobile-specific constraints
-  mobile: {
-    video: {
-      facingMode: { ideal: "environment" }, // Prefer back camera
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-    },
-  },
-};
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Progress } from "@/components/ui/progress"; // Import progress bar
 
 const parseTagString = (tagString: string): string[] => {
   return tagString
@@ -49,56 +31,58 @@ const parseTagString = (tagString: string): string[] => {
 };
 
 const CameraCapture = () => {
-  // ... (previous state declarations remain the same)
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // State management for media stream, captured image, and loading state
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0); // Track progress
   const [bodyPartTags, setBodyPartTags] = useState("");
   const [diagnosisTags, setDiagnosisTags] = useState("");
   const [classificationTags, setClassificationTags] = useState("");
   const [implantTags, setImplantTags] = useState("");
   const [notes, setNotes] = useState("");
-  const [demographics, setDemographics] = useState<PatientDemographics>({
+  const [demographics, setDemographics] = useState({
     age: "",
     gender: "",
     clinicalHistory: "",
   });
-  // Add new state for device type and camera permissions
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
 
-  // Detect mobile device on component mount
-  useEffect(() => {
-    const checkMobileDevice = () => {
-      const userAgent = navigator.userAgent.toLowerCase();
-      const isMobile = /mobile|android|iphone|ipad|ipod/.test(userAgent);
-      setIsMobileDevice(isMobile);
-    };
+  const email = useAuthStore((state) => state.email);
 
-    checkMobileDevice();
-  }, []);
-
-  const captureImage = () => {
-    if (videoRef.current && canvasRef.current) {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const context = canvas.getContext("2d");
-
-      if (context && video.videoWidth && video.videoHeight) {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageDataUrl = canvas.toDataURL("image/jpeg");
-        setCapturedImage(imageDataUrl);
-      }
+  const dataURLtoFile = (dataUrl: string, filename: string): File => {
+    const arr = dataUrl.split(",");
+    const mime = arr[0].match(/:(.*?);/)?.[1] || "image/jpeg";
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
     }
+    return new File([u8arr], filename, { type: mime });
   };
 
-  // Check for existing camera permissions
+  const CAMERA_CONSTRAINTS = {
+    // Default constraints for desktop
+    desktop: {
+      video: {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+    },
+    // Mobile-specific constraints
+    mobile: {
+      video: {
+        facingMode: { ideal: "environment" }, // Prefer back camera
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+    },
+  };
+
   const checkCameraPermissions = async () => {
     try {
       const permissions = await navigator.permissions.query({
@@ -126,6 +110,7 @@ const CameraCapture = () => {
       }
     }
   };
+
   const startWebcam = async () => {
     try {
       // First, check permissions
@@ -136,28 +121,30 @@ const CameraCapture = () => {
         ? CAMERA_CONSTRAINTS.mobile
         : CAMERA_CONSTRAINTS.desktop;
 
-      console.log('Using constraints:', constraints); // Debug log
+      console.log("Using constraints:", constraints); // Debug log
 
       // Request camera access with appropriate constraints
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
-      console.log('Stream received:', stream.active); // Debug log
+
+      console.log("Stream received:", stream.active); // Debug log
 
       if (videoRef.current) {
         // Ensure video element is ready
         videoRef.current.srcObject = null; // Clear any existing source
         videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.setAttribute('autoplay', 'true');
-        
+        videoRef.current.setAttribute("playsinline", "true");
+        videoRef.current.setAttribute("autoplay", "true");
+
         // Add event listeners to ensure video is playing
         videoRef.current.onloadedmetadata = () => {
-          console.log('Video metadata loaded'); // Debug log
-          videoRef.current?.play().catch(e => console.error('Play failed:', e));
+          console.log("Video metadata loaded"); // Debug log
+          videoRef.current
+            ?.play()
+            .catch((e) => console.error("Play failed:", e));
         };
 
         videoRef.current.onerror = (e) => {
-          console.error('Video error:', e); // Debug log
+          console.error("Video error:", e); // Debug log
         };
       }
 
@@ -199,8 +186,35 @@ const CameraCapture = () => {
     }
   }, [mediaStream]);
 
+  const saveImage = () => {
+    if (capturedImage) {
+      const a = document.createElement("a");
+      a.href = capturedImage;
+      a.download = "captured-image.jpg";
+      a.click();
+    }
+  };
 
-  // Enhanced stopWebcam function
+  const resetImage = () => {
+    setCapturedImage(null);
+  };
+
+  const captureImage = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext("2d");
+
+      if (context && video.videoWidth && video.videoHeight) {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageDataUrl = canvas.toDataURL("image/jpeg");
+        setCapturedImage(imageDataUrl);
+      }
+    }
+  };
+
   const stopWebcam = () => {
     if (mediaStream) {
       mediaStream.getTracks().forEach((track) => {
@@ -214,27 +228,15 @@ const CameraCapture = () => {
     }
   };
 
-  const dataURLtoFile = (dataUrl: string, filename: string): File => {
-    const arr = dataUrl.split(",");
-    const mime = arr[0].match(/:(.*?);/)?.[1] || "image/jpeg";
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], filename, { type: mime });
-  };
-  const email = useAuthStore((state) => state.email);
   const uploadImage = async () => {
     if (!capturedImage) return;
 
     try {
       setIsUploading(true);
-      // Convert base64 image to File object
+      setUploadProgress(0); // Reset progress to 0 at the start
+
       const imageFile = dataURLtoFile(capturedImage, "captured-image.jpg");
 
-      // Create FormData and append necessary data
       const formData = new FormData();
       formData.append("file", imageFile);
 
@@ -257,23 +259,27 @@ const CameraCapture = () => {
       };
 
       formData.append("metadata", JSON.stringify(metaData));
-      console.log("FormData content:");
-      for (const [key, value] of formData.entries()) {
-        console.log(`${key}:`, value);
-      }
-      // Make the upload request
+
+      // Upload request with progress tracking
       const response = await api.post("/api/assets/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const progress = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(progress); // Update progress state
+          }
+        },
       });
 
       toast({
         title: "Success",
         description: "Image uploaded successfully!",
       });
-      stopWebcam();
 
-      // Return the cloudinary URL if needed
-      return response.data.image.cloudinaryUrl;
+      setUploadProgress(100); // Set to 100% after successful upload
+      stopWebcam();
     } catch (error) {
       console.error("Upload error:", error);
       toast({
@@ -286,49 +292,25 @@ const CameraCapture = () => {
     }
   };
 
-  // Clean up function using useEffect
-  useEffect(() => {
-    return () => {
-      // Ensure camera is stopped when component unmounts
-      stopWebcam();
-    };
-  }, []);
-
-  const saveImage = () => {
-    if (capturedImage) {
-      const a = document.createElement("a");
-      a.href = capturedImage;
-      a.download = "captured-image.jpg";
-      a.click();
-    }
-  };
-
-  const resetImage = () => {
-    setCapturedImage(null);
-  };
-
-  // Modified JSX for better mobile support
   return (
     <Card className="w-full lg:max-w-96 h-max-screen mx-auto overflow-y-scroll p-2">
       <CardContent className="lg:p-6">
-      <div className="relative mb-4 aspect-video bg-gray-100 rounded-lg overflow-hidden">
-          {(!mediaStream && !capturedImage) && (
+        {/* Camera video or captured image */}
+        <div className="relative mb-4 aspect-video bg-gray-100 rounded-lg overflow-hidden">
+          {!mediaStream && !capturedImage && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
               <Smartphone className="w-12 h-12 mb-2" />
               <p>Camera is not active</p>
               <p>Click "Start Camera" to begin</p>
             </div>
           )}
-          {(mediaStream && !capturedImage) && (
+          {mediaStream && !capturedImage && (
             <video
               ref={videoRef}
               autoPlay
               playsInline
               muted
               className="absolute inset-0 w-full h-full object-cover"
-              style={{
-                transform: isMobileDevice ? 'scaleX(-1)' : 'none', // Mirror front camera if needed
-              }}
             />
           )}
           <canvas ref={canvasRef} className="hidden" />
@@ -341,6 +323,7 @@ const CameraCapture = () => {
           )}
         </div>
 
+        {/* Inputs and Tags */}
         <div className="space-y-2 m-2">
           <Input
             value={bodyPartTags}
@@ -362,7 +345,6 @@ const CameraCapture = () => {
             onChange={(e) => setImplantTags(e.target.value)}
             placeholder="Implant tags (separate with spaces)"
           />
-
           {/* Patient Demographics */}
           <div className="grid grid-cols-2 gap-2">
             <Input
@@ -399,15 +381,16 @@ const CameraCapture = () => {
             }
             placeholder="Clinical History"
           />
-
-          {/* Notes */}
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Additional notes"
-            className="h-24"
-          />
         </div>
+
+        {/* Progress bar for upload */}
+        {isUploading && (
+          <div className="mt-4">
+            <Progress className="opacity-50" value={uploadProgress} max={100} />
+            <p className="text-xs text-black mt-1">{uploadProgress}%</p>
+          </div>
+        )}
+
         {/* Control buttons */}
         <div className="flex justify-center gap-3">
           {capturedImage ? (

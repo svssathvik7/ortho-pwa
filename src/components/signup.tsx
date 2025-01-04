@@ -98,7 +98,7 @@ const SignupForm = () => {
 
           <div className='w-full h-fit p-2 flex items-center justify-end'>
               <p>Already have an account?</p>
-              <Link to='/auth/login' className='px-4 mx-1'><Button className='px-2'>Login</Button></Link>
+              <Link to='/auth/login' className='px-4 mx-1'><Button className='px-2' type='button'>Login</Button></Link>
           </div>
 
           <Button type="submit" className="w-full">
