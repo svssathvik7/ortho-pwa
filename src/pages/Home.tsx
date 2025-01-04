@@ -1,9 +1,6 @@
 import Navbar from "@/components/navbar";
-import { useAuthStore } from "@/store/authStore";
 
 export default function Home() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const email = useAuthStore((state) => state.email);
 
   return (
     <div className="flex flex-col h-screen">

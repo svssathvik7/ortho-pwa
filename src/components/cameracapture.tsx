@@ -69,7 +69,7 @@ const CameraCapture = () => {
   });
   // Add new state for device type and camera permissions
   const [isMobileDevice, setIsMobileDevice] = useState(false);
-  const [hasPermissions, setHasPermissions] = useState<boolean | null>(null);
+  const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
 
   // Detect mobile device on component mount
   useEffect(() => {

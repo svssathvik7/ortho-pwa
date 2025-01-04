@@ -144,3 +144,8 @@
 img{
   width: 100%;
 }
+
+#root{
+  width: 100dvw;
+  overflow-x: hidden;
+}

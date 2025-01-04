@@ -3,7 +3,6 @@ import './App.css'
 import Auth from './pages/Auth'
 import Home from './pages/Home'
 import AssetUpload from './pages/AssetCenter'
-import AssetResults from './components/assetResults'
 import AssetDisplay from './pages/AssetResults'
 import Account from './pages/Account'
 

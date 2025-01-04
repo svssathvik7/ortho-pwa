@@ -1,21 +1,40 @@
 import { useEffect, useState } from "react";
 import CameraCapture from "./cameracapture";
 import FileUploader from "./imageuploader";
+import { Tabs } from "@radix-ui/react-tabs";
+import { TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 export default function AssetUploader() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+
   useEffect(() => {
-    setIsOnline(navigator.onLine);
-  }, [navigator.onLine]);
+    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+
+    return () => {
+      window.removeEventListener("online", updateOnlineStatus);
+      window.removeEventListener("offline", updateOnlineStatus);
+    };
+  }, []);
+
   return (
-    <div className="m-auto flex-grow p-6 flex items-center justify-center w-screen flex-wrap overflow-y-scroll">
+    <div className="mt-28 flex items-center justify-center">
       {isOnline ? (
-        <div className="flex gap-2 flex-wrap w-fit">
-          <CameraCapture />
-          <FileUploader />
-        </div>
+        <Tabs defaultValue="camera" className="w-screen lg:w-3/4">
+          <TabsList className="flex justify-center">
+            <TabsTrigger className="w-full" value="camera">Camera Upload</TabsTrigger>
+            <TabsTrigger className="w-full" value="file">File Upload</TabsTrigger>
+          </TabsList>
+          <TabsContent value="camera" className="p-4">
+            <CameraCapture />
+          </TabsContent>
+          <TabsContent value="file" className="p-4">
+            <FileUploader />
+          </TabsContent>
+        </Tabs>
       ) : (
-        <p>Login to upload assets</p>
+        <p>Please connect to the internet to upload assets.</p>
       )}
     </div>
   );

@@ -47,7 +47,7 @@ const ImageSearch = () => {
   const [selectedGender, setSelectedGender] = useState<string>("all");
 
   // State for search results and loading
-  const [searchResults, setSearchResults] = useState<ImageResult[]>([]);
+  const [_searchResults, setSearchResults] = useState<ImageResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Function to handle adding tags
