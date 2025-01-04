@@ -42,7 +42,7 @@ export default function AssetCenter() {
   return (
     <div>
       <Navbar/>
-      <div className=''>
+      <div>
         {isAuthenticated && renderComponent()}   
       </div>
     </div>
