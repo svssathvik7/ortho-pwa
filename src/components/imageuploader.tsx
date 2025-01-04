@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 const ACCEPTED_FILE_TYPES = {
   "image/jpeg": [".jpg", ".jpeg"],
   "image/png": [".png"],
+  "application/dicom": [".dcm", ".dicom", ".dicm"],
 };
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -209,7 +210,7 @@ const FileUploader = () => {
             ${uploading ? "pointer-events-none opacity-50" : ""}
           `}
         >
-          <input {...getInputProps()} disabled={uploading} />
+          <Input {...getInputProps()} disabled={uploading} />
           <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
           <p className="text-gray-600">
             {isDragActive
