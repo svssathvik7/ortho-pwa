@@ -3,8 +3,10 @@ import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
 import ImageResult from "@/types/assetResults";
 import { useEffect, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Edit } from "lucide-react";
+import { Input } from "./ui/input";
 
 interface EditFormState {
   bodyParts: string[];
@@ -20,44 +22,8 @@ interface EditFormState {
 const AssetGrid = () => {
   const email = useAuthStore((state) => state.email);
   const [images, setImages] = useState<ImageResult[]>([]);
-  const [_selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
-  const [sharingEmail, setSharingEmail] = useState("");
-  const [sharingImageId, setSharingImageId] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-  const [editingImageId, setEditingImageId] = useState<string | null>(null);
-  const [editFormState, setEditFormState] = useState<EditFormState>({
-    bodyParts: [],
-    classifications: [],
-    notes: "",
-    diagnosisTags: [],
-    implantTags: [],
-    patientAge: null,
-    patientGender: "",
-    clinicalHistory: "",
-  });
-
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogImage, setDialogImage] = useState<ImageResult | null>(null);
-
-  const handleEditClick = (image: ImageResult) => {
-    setEditingImageId(image._id);
-    setEditFormState({
-      bodyParts: image.bodyParts,
-      classifications: image.classifications,
-      diagnosisTags: image.diagnoses,
-      implantTags: image.implants,
-      patientAge: image.patientDemographics.age,
-      patientGender: image.patientDemographics.gender,
-      notes: image.notes || "",
-      clinicalHistory: image.clinicalHistory || ""
-    });
-  };
-
-  const handleImageClick = (image: ImageResult) => {
-    setDialogImage(image);
-    setDialogOpen(true);
-  };
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -77,10 +43,8 @@ const AssetGrid = () => {
       try {
         const response = await api.get(`/api/assets/get-user-assets/${email}`);
         setImages(response.data.data.images);
-      } catch (error: any) {
-        if (!navigator.onLine && images.length > 0) {
-          return;
-        }
+      } catch (error:any) {
+        if (!navigator.onLine && images.length > 0) return;
         toast({
           title: error.response?.data || "An error occurred",
           variant: "destructive",
@@ -93,79 +57,54 @@ const AssetGrid = () => {
   return (
     <div className="mt-28 px-4">
       {!isOnline && (
-        <div className="bg-yellow-100 p-3 mb-4 rounded-lg text-yellow-800">
+        <div className="bg-yellow-100 p-2 mb-4 rounded-lg text-yellow-800">
           You're currently offline. Showing cached images.
         </div>
       )}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="flex-grow w-full flex justify-center flex-wrap gap-1 overflow-y-scroll">
         {images.length === 0 ? (
-          <p className="text-center w-full text-gray-500">No assets to see!</p>
+          <p className="text-center w-full">No assets to see!</p>
         ) : (
           images.map((image) => (
             <div
               key={image._id}
-              className="relative group bg-white shadow-lg rounded-lg border border-gray-200 overflow-hidden transition-transform transform hover:scale-105 text-left"
-              onClick={() => handleImageClick(image)}
+              className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative p-2 w-full lg:min-h-fit lg:w-72"
             >
               <img
                 src={image.cloudinaryUrl}
                 alt={image.notes || "Asset Image"}
-                className="w-full h-48 object-cover rounded-t-lg"
+                className="w-full aspect-square object-cover"
               />
-              <div className="p-4 space-y-2">
-                <p className="text-gray-700 font-semibold truncate">
-                  Body part tags: {image.bodyParts.join(", ") || "None"}
-                </p>
-                <p className="text-gray-600 truncate">
-                  Diagnosis Tags: {image.diagnoses.join(", ") || "None"}
-                </p>
-                <p className="text-gray-600 truncate">
-                  Implant Tags: {image.implants.join(", ") || "None"}
-                </p>
-                <p className="text-gray-600">
-                  Patient Age: {image?.patientDemographics?.age || "Unknown"}
-                </p>
-                <p className="text-gray-600">
-                  Patient Gender: {image?.patientDemographics?.gender || "Unknown"}
-                </p>
-                <p className="text-gray-600 truncate">
-                  Clinical History: {image.clinicalHistory || "No history available"}
-                </p>
-                <p className="text-gray-500 text-sm">
-                  Created At: {new Date(image.createdAt).toLocaleDateString()}
-                </p>
-                {email !== image.owner && (
-                  <p className="text-gray-500 text-sm">
-                    Asset by {image.owner}
-                  </p>
-                )}
-              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <div className="absolute inset-0 bg-black bg-opacity-75 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
+                    <p className="text-white text-lg font-bold">View Image</p>
+                  </div>
+                </DialogTrigger>
+                <DialogContent
+                  onOpenAutoFocus={(event) => event.preventDefault()}
+                  onCloseAutoFocus={(event) => event.preventDefault()}
+                  className="bg-white p-4 rounded-lg w-full max-w-2xl mx-auto"
+                >
+                  <DialogHeader>
+                    <DialogTitle>Asset Image</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex justify-center">
+                    <img
+                      src={image.cloudinaryUrl}
+                      alt={image.notes || "Asset Image"}
+                      className="w-full max-h-[80vh] object-contain"
+                    />
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           ))
         )}
       </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{dialogImage?.notes || "Asset Details"}</DialogTitle>
-            <DialogDescription>
-              Detailed information about the selected asset.
-            </DialogDescription>
-          </DialogHeader>
-          {dialogImage && (
-            <div className="flex flex-col items-center space-y-4 max-h-96">
-              <img
-                src={dialogImage.cloudinaryUrl}
-                alt={dialogImage.notes || "Asset Image"}
-                className="max-h-96 rounded-lg object-contain"
-              />
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
 
 export default AssetGrid;
+

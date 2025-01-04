@@ -69,7 +69,7 @@ const FileUploader = () => {
   // Validate file type and size
   const validateFile = (file: File) => {
     if (!Object.keys(ACCEPTED_FILE_TYPES).includes(file.type)) {
-      setError("Invalid file type. Please upload only JPEG or PNG files.");
+      setError("Invalid file type. Please upload only JPEG, PNG, or DICOM files.");
       return false;
     }
     if (file.size > MAX_FILE_SIZE) {
@@ -83,9 +83,11 @@ const FileUploader = () => {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setError(null);
     const validFiles = acceptedFiles.filter(validateFile);
-    const filesWithPreviews = validFiles.map((file) =>
-      Object.assign(file, { preview: URL.createObjectURL(file) })
-    );
+    const filesWithPreviews = validFiles.map((file) => {
+      const isDicom = file.type === "application/dicom" || file.name.endsWith(".dicom") || file.name.endsWith(".dcm");
+      const preview = isDicom ? undefined : URL.createObjectURL(file); // No preview for DICOM
+      return Object.assign(file, { preview, isDicom });
+    });
     setFiles((prev) => [...prev, ...filesWithPreviews]);
   }, []);
 
@@ -218,7 +220,7 @@ const FileUploader = () => {
               : "Drag & drop images here, or click to select"}
           </p>
           <p className="text-sm text-gray-500 mt-2">
-            Accepted files: JPEG, PNG (max 10MB)
+            Accepted files: JPEG, PNG, DICOM (max 10MB)
           </p>
         </div>
 
@@ -237,12 +239,12 @@ const FileUploader = () => {
                 key={index}
                 className="relative group rounded-lg overflow-hidden"
               >
-                <div className="aspect-square relative">
-                  <img
-                    src={file.preview}
-                    alt={file.name}
-                    className="w-full h-full object-cover"
-                  />
+                <div className="aspect-square relative">(
+                    <img
+                      src={file.preview}
+                      alt={file.name}
+                      className="w-full h-full object-cover"
+                    />
                   {uploadProgress[file.name] !== undefined &&
                     uploadProgress[file.name] < 100 && (
                       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
