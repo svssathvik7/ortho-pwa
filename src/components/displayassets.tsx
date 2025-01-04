@@ -3,27 +3,20 @@ import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
 import ImageResult from "@/types/assetResults";
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
-import { Button } from "./ui/button";
-import { Edit } from "lucide-react";
-import { Input } from "./ui/input";
-
-interface EditFormState {
-  bodyParts: string[];
-  classifications: string[];
-  notes: string;
-  diagnosisTags: string[];
-  implantTags: string[];
-  patientAge: number | null;
-  patientGender: string;
-  clinicalHistory: string;
-}
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Badge } from "./ui/badge";
+import { Bolt, Hand, Split, Search } from "lucide-react";
 
 const AssetGrid = () => {
   const email = useAuthStore((state) => state.email);
   const [images, setImages] = useState<ImageResult[]>([]);
-  const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -43,7 +36,7 @@ const AssetGrid = () => {
       try {
         const response = await api.get(`/api/assets/get-user-assets/${email}`);
         setImages(response.data.data.images);
-      } catch (error:any) {
+      } catch (error: any) {
         if (!navigator.onLine && images.length > 0) return;
         toast({
           title: error.response?.data || "An error occurred",
@@ -68,43 +61,55 @@ const AssetGrid = () => {
           images.map((image) => (
             <div
               key={image._id}
-              className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative p-2 w-full lg:min-h-fit lg:w-72"
+              className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative p-2 w-full lg:w-72"
             >
               <img
                 src={image.cloudinaryUrl}
                 alt={image.notes || "Asset Image"}
-                className="w-full aspect-square object-cover"
+                className="w-full aspect-square object-cover max-h-72 cursor-pointer"
+                onClick={() => setSelectedImage(image)}
               />
-              <Dialog>
-                <DialogTrigger asChild>
-                  <div className="absolute inset-0 bg-black bg-opacity-75 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center cursor-pointer">
-                    <p className="text-white text-lg font-bold">View Image</p>
-                  </div>
-                </DialogTrigger>
-                <DialogContent
-                  onOpenAutoFocus={(event) => event.preventDefault()}
-                  onCloseAutoFocus={(event) => event.preventDefault()}
-                  className="bg-white p-4 rounded-lg w-full max-w-2xl mx-auto"
-                >
-                  <DialogHeader>
-                    <DialogTitle>Asset Image</DialogTitle>
-                  </DialogHeader>
-                  <div className="flex justify-center">
-                    <img
-                      src={image.cloudinaryUrl}
-                      alt={image.notes || "Asset Image"}
-                      className="w-full max-h-[80vh] object-contain"
-                    />
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <div className="w-full flex items-center justify-around absolute top-0 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2 bg-black bg-opacity-50">
+                <Badge title="Body parts" className="w-10 h-5">
+                  <Hand />
+                </Badge>
+                <Badge title="Implant Tags" className="w-10 h-5">
+                  <Bolt />
+                </Badge>
+                <Badge title="Classification Tags" className="w-10 h-5">
+                  <Split />
+                </Badge>
+                <Badge title="Diagnosis Tags" className="w-10 h-5">
+                  <Search />
+                </Badge>
+              </div>
             </div>
           ))
         )}
       </div>
+
+      {/* Dialog for Selected Image */}
+      {selectedImage && (
+        <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Asset Details</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center">
+              <img
+                src={selectedImage.cloudinaryUrl}
+                alt={selectedImage.notes || "Asset Image"}
+                className="w-full max-h-96 object-contain"
+              />
+              <div className="mt-4 text-sm text-gray-600">
+                {selectedImage.notes || "No additional notes provided."}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
 
 export default AssetGrid;
-
