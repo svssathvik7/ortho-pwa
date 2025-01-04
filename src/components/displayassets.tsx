@@ -3,14 +3,10 @@ import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
 import ImageResult from "@/types/assetResults";
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
 import { Bolt, Hand, Split, Search } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 
 const AssetGrid = () => {
   const email = useAuthStore((state) => state.email);
@@ -36,7 +32,7 @@ const AssetGrid = () => {
       try {
         const response = await api.get(`/api/assets/get-user-assets/${email}`);
         setImages(response.data.data.images);
-      } catch (error: any) {
+      } catch (error:any) {
         if (!navigator.onLine && images.length > 0) return;
         toast({
           title: error.response?.data || "An error occurred",
@@ -70,18 +66,82 @@ const AssetGrid = () => {
                 onClick={() => setSelectedImage(image)}
               />
               <div className="w-full flex items-center justify-around absolute top-0 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2 bg-black bg-opacity-50">
-                <Badge title="Body parts" className="w-10 h-5">
-                  <Hand />
-                </Badge>
-                <Badge title="Implant Tags" className="w-10 h-5">
-                  <Bolt />
-                </Badge>
-                <Badge title="Classification Tags" className="w-10 h-5">
-                  <Split />
-                </Badge>
-                <Badge title="Diagnosis Tags" className="w-10 h-5">
-                  <Search />
-                </Badge>
+                <HoverCard>
+                  <HoverCardTrigger>
+                    <Badge title="Body parts" className="w-10 h-5 cursor-pointer">
+                      <Hand />
+                    </Badge>
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    side="top"
+                    align="center"
+                    className="bg-white border border-gray-200 rounded-md p-2 shadow-lg text-xs text-gray-700 flex flex-col gap-1"
+                  >
+                    <span className="text-black text-xl">{image.bodyParts.length == 0 && "No"} Body tags</span>
+                    <div className="flex flex-wrap gap-1">
+                      {image.bodyParts.map((part) => (
+                        <p className="rounded-full bg-blue-800 text-white px-2">{part}</p>
+                      ))}
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+                <HoverCard>
+                  <HoverCardTrigger>
+                    <Badge title="Implant Tags" className="w-10 h-5 cursor-pointer">
+                      <Bolt />
+                    </Badge>
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    side="top"
+                    align="center"
+                    className="bg-white border border-gray-200 rounded-md p-2 shadow-lg text-xs text-gray-700"
+                  >
+                    <span className="text-black text-xl">{image.implants.length == 0 && "No"} Implant tags</span>
+                    <div className="flex flex-wrap gap-1">
+                      {image.implants.map((implant) => (
+                        <p className="rounded-full bg-blue-800 text-white px-2">{implant}</p>
+                      ))}
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+                <HoverCard>
+                  <HoverCardTrigger>
+                    <Badge title="Classification Tags" className="w-10 h-5 cursor-pointer">
+                      <Split />
+                    </Badge>
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    side="top"
+                    align="center"
+                    className="bg-white border border-gray-200 rounded-md p-2 shadow-lg text-xs text-gray-700"
+                  >
+                    <span className="text-black text-xl">{image.classifications.length == 0 && "No"} Classification tags</span>
+                    <div className="flex flex-wrap gap-1">
+                      {image.classifications.map((classification) => (
+                        <p className="rounded-full bg-blue-800 text-white px-2">{classification}</p>
+                      ))}
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
+                <HoverCard>
+                  <HoverCardTrigger>
+                    <Badge title="Diagnosis Tags" className="w-10 h-5 cursor-pointer">
+                      <Search />
+                    </Badge>
+                  </HoverCardTrigger>
+                  <HoverCardContent
+                    side="top"
+                    align="center"
+                    className="bg-white border border-gray-200 rounded-md p-2 shadow-lg text-xs text-gray-700"
+                  >
+                    <span className="text-black text-xl">{image.diagnoses.length == 0 && "No"} Diagnoses tags</span>
+                    <div className="flex flex-wrap gap-1">
+                      {image.diagnoses.map((diagnoses) => (
+                        <p className="rounded-full bg-blue-800 text-white px-2">{diagnoses}</p>
+                      ))}
+                    </div>
+                  </HoverCardContent>
+                </HoverCard>
               </div>
             </div>
           ))
@@ -90,7 +150,10 @@ const AssetGrid = () => {
 
       {/* Dialog for Selected Image */}
       {selectedImage && (
-        <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
+        <Dialog
+          open={!!selectedImage}
+          onOpenChange={() => setSelectedImage(null)}
+        >
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>Asset Details</DialogTitle>
