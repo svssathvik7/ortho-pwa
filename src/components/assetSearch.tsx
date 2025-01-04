@@ -409,7 +409,7 @@ const ImageSearch = () => {
           </CardContent>
         </div> : <p>Login to search assets.</p>}
       </Card>
-      <div className="w-3/4 lg:w-screen">
+      <div className="w-screen lg:w-3/4">
         {assetResults.length > 0 ? <AssetResults images={assetResults}/> : <p>No assets found!</p>}
       </div>
     </div>
