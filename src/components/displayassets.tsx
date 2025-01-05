@@ -9,11 +9,7 @@ import { Bolt, Hand, Split, Search } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import InsightViewer, { useImage } from "@lunit/insight-viewer";
-
-const DICOMDisplay = (url:any) => {
-  const { image } = useImage({ wadouri: url });
-  return <InsightViewer image={image} />;
-};
+import DICOMDisplay from "./DICOMDisplay";
 
 const IsDicom = (url: string): boolean => {
   return (
