@@ -47,6 +47,7 @@ const CameraCapture = () => {
     age: "",
     gender: "",
     clinicalHistory: "",
+    notes: ""
   });
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
@@ -325,26 +326,70 @@ const CameraCapture = () => {
 
         {/* Inputs and Tags */}
         <div className="space-y-2 m-2">
-          <Input
-            value={bodyPartTags}
-            onChange={(e) => setBodyPartTags(e.target.value)}
-            placeholder="Body part tags (separate with spaces)"
-          />
-          <Input
-            value={diagnosisTags}
-            onChange={(e) => setDiagnosisTags(e.target.value)}
-            placeholder="Diagnosis tags (separate with spaces)"
-          />
-          <Input
-            value={classificationTags}
-            onChange={(e) => setClassificationTags(e.target.value)}
-            placeholder="Classification tags (separate with spaces)"
-          />
-          <Input
-            value={implantTags}
-            onChange={(e) => setImplantTags(e.target.value)}
-            placeholder="Implant tags (separate with spaces)"
-          />
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {bodyPartTags!="" && bodyPartTags.split(" ").map((tag) => (
+                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={bodyPartTags}
+                onChange={(e) => setBodyPartTags(e.target.value)}
+                placeholder="Enter body part..."
+                className="flex-1"
+              />
+            </div>
+          </div>
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {diagnosisTags!="" && diagnosisTags.split(" ").map((tag) => (
+                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={diagnosisTags}
+                onChange={(e) => setDiagnosisTags(e.target.value)}
+                placeholder="Enter diagnoses tags..."
+                className="flex-1"
+              />
+            </div>
+          </div>
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {classificationTags!="" && classificationTags.split(" ").map((tag) => (
+                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={classificationTags}
+                onChange={(e) => setClassificationTags(e.target.value)}
+                placeholder="Enter classification tags..."
+                className="flex-1"
+              />
+            </div>
+          </div>
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {implantTags!="" && implantTags.split(" ").map((tag) => (
+                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={implantTags}
+                onChange={(e) => setImplantTags(e.target.value)}
+                placeholder="Enter implant tags..."
+                className="flex-1"
+              />
+            </div>
+          </div>
           {/* Patient Demographics */}
           <div className="grid grid-cols-2 gap-2">
             <Input
@@ -380,6 +425,16 @@ const CameraCapture = () => {
               }))
             }
             placeholder="Clinical History"
+          />
+          <Input
+            value={demographics.notes}
+            onChange={(e) =>
+              setDemographics((prev) => ({
+                ...prev,
+                notes: e.target.value,
+              }))
+            }
+            placeholder="Notes"
           />
         </div>
 
