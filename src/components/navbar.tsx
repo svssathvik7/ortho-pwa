@@ -151,7 +151,7 @@ export default function Navbar() {
             <span>Asset Manager</span>
           </button>
         </DialogTrigger>
-        <DialogContent className="w-fit rounded-lg">
+        <DialogContent className="w-3/4 rounded-lg">
           <div className="flex flex-col space-y-2">
             <Link
               to="/assets/upload"

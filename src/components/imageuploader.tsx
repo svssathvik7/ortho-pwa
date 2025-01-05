@@ -37,7 +37,7 @@ interface FileWithPreview extends File {
 interface PatientDemographics {
   age: string;
   gender: string;
-  clinicalHistory: string;
+  clinical_history: string;
   notes: string;
 }
 
@@ -59,7 +59,7 @@ const FileUploader = () => {
   const [demographics, setDemographics] = useState<PatientDemographics>({
     age: "",
     gender: "",
-    clinicalHistory: "",
+    clinical_history: "",
     notes: ""
   });
 
@@ -403,11 +403,11 @@ const FileUploader = () => {
             </Select>
           </div>
           <Input
-            value={demographics.clinicalHistory}
+            value={demographics.clinical_history}
             onChange={(e) =>
               setDemographics((prev) => ({
                 ...prev,
-                clinicalHistory: e.target.value,
+                clinical_history: e.target.value,
               }))
             }
             placeholder="Clinical History"

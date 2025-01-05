@@ -223,8 +223,8 @@ const AssetGrid = () => {
                     <Bolt />
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="body-parts">
-                  <span className="text-black text-xl">
+                <TabsContent value="body-parts" className="flex items-center justify-start">
+                  <span className="text-black text-xl m-2">
                     {selectedImage.bodyParts.length == 0 && "No"} Body tags
                   </span>
                   <div className="flex flex-wrap gap-1">
@@ -235,8 +235,8 @@ const AssetGrid = () => {
                     ))}
                   </div>
                 </TabsContent>
-                <TabsContent value="diagnoses">
-                  <span className="text-black text-xl">
+                <TabsContent value="diagnoses" className="flex items-center justify-start">
+                  <span className="text-black text-xl m-2">
                     {selectedImage.diagnoses.length == 0 && "No"} Diagnoses tags
                   </span>
                   <div className="flex flex-wrap gap-1">
@@ -247,8 +247,8 @@ const AssetGrid = () => {
                     ))}
                   </div>
                 </TabsContent>
-                <TabsContent value="classification">
-                  <span className="text-black text-xl">
+                <TabsContent value="classification" className="flex items-center justify-start">
+                  <span className="text-black text-xl m-2">
                     {selectedImage.classifications.length == 0 && "No"}{" "}
                     Classification tags
                   </span>
@@ -260,8 +260,8 @@ const AssetGrid = () => {
                     ))}
                   </div>
                 </TabsContent>
-                <TabsContent value="implants">
-                  <span className="text-black text-xl">
+                <TabsContent value="implants" className="flex items-center justify-start">
+                  <span className="text-black text-xl m-2">
                     {selectedImage.implants.length == 0 && "No"} Implant tags
                   </span>
                   <div className="flex flex-wrap gap-1">
@@ -273,8 +273,8 @@ const AssetGrid = () => {
                   </div>
                 </TabsContent>
               </Tabs>
-              <div className="w-full text-left">Clinical history: <span>{selectedImage.patientDemographics.clinicalHistory}</span></div>
-              <div className="w-full text-left">Notes: <span>{selectedImage.patientDemographics.notes}</span></div>
+              <div className="w-full text-left flex items-center justify-start m-2"><p className="text-lg">Clinical history: </p><span className="bg-yellow-200 p-2 m-2">{selectedImage.patientDemographics.clinical_history}</span></div>
+              <div className="w-full text-left flex items-center justify-start m-2"><p className="text-lg">Notes: </p><span className="bg-yellow-200 p-2 m-2">{selectedImage.patientDemographics.notes}</span></div>
             </div>
           </DialogContent>
         </Dialog>

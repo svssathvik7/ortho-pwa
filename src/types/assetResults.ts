@@ -12,7 +12,7 @@ type ImageResult = {
       age: number;
       notes: string;
       gender: string;
-      clinicalHistory: string;
+      clinical_history: string;
     };
   }
   export default ImageResult;

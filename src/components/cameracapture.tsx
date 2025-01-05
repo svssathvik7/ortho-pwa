@@ -42,11 +42,10 @@ const CameraCapture = () => {
   const [diagnosisTags, setDiagnosisTags] = useState("");
   const [classificationTags, setClassificationTags] = useState("");
   const [implantTags, setImplantTags] = useState("");
-  const [notes, setNotes] = useState("");
   const [demographics, setDemographics] = useState({
     age: "",
     gender: "",
-    clinicalHistory: "",
+    clinical_history: "",
     notes: ""
   });
   const [isMobileDevice, setIsMobileDevice] = useState(false);
@@ -250,11 +249,10 @@ const CameraCapture = () => {
           tag.toLowerCase()
         ),
         implants: parseTagString(implantTags).map((tag) => tag.toLowerCase()),
-        notes,
         patientDemographics: {
           age: demographics.age.toLowerCase(),
           gender: demographics.gender.toLowerCase(),
-          clinicalHistory: demographics.clinicalHistory.toLowerCase(),
+          clinicalHistory: demographics.clinical_history.toLowerCase(),
         },
         owner: email ? email.toLowerCase() : "",
       };
@@ -417,11 +415,11 @@ const CameraCapture = () => {
             </Select>
           </div>
           <Input
-            value={demographics.clinicalHistory}
+            value={demographics.clinical_history}
             onChange={(e) =>
               setDemographics((prev) => ({
                 ...prev,
-                clinicalHistory: e.target.value,
+                clinical_history: e.target.value,
               }))
             }
             placeholder="Clinical History"
