@@ -154,12 +154,12 @@ export default function DICOMDisplay({
   }
 
   return (
-    <div ref={containerRef} className={`relative w-full h-full ${className}`}>
+    <div ref={containerRef}>
       <div className="flex items-center justify-center w-full h-full">
         <img 
           src={imageData.url}
           alt="DICOM medical image"
-          className="object-contain"
+          className={`${className}`}
           style={{
             width: '100%',
             height: 'auto',

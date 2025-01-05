@@ -8,12 +8,11 @@ import { Badge } from "./ui/badge";
 import { Bolt, Hand, Split, Search } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import InsightViewer, { useImage } from "@lunit/insight-viewer";
 import DICOMDisplay from "./DICOMDisplay";
 
-const IsDicom = (url: string): boolean => {
+export const IsDicom = (url: string): boolean => {
   return (
-    url.endsWith(".dcm") || url.endsWith(".dicom") || url.endsWith(".dicm")
+    url?.endsWith(".dcm") || url?.endsWith(".dicom") || url?.endsWith(".dicm")
   );
 };
 
@@ -71,7 +70,7 @@ const AssetGrid = () => {
               {!IsDicom(image.cloudinaryUrl) ? (
                 <img
                   src={image.cloudinaryUrl}
-                  alt={image.notes || "Asset Image"}
+                  alt={image.patientDemographics.notes || "Asset Image"}
                   className="w-full aspect-square object-cover max-h-72 cursor-pointer"
                   onClick={() => setSelectedImage(image)}
                 />
@@ -199,14 +198,14 @@ const AssetGrid = () => {
           open={!!selectedImage}
           onOpenChange={() => setSelectedImage(null)}
         >
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-[80dvw] max-h-[70dvh] overflow-y-scroll">
             <DialogHeader>
               <DialogTitle>Asset Details</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center justify-center overflow-y-scroll">
-              {IsDicom(selectedImage.cloudinaryUrl) ? <DICOMDisplay url={selectedImage.cloudinaryUrl} className=""/> : <img
+              {IsDicom(selectedImage.cloudinaryUrl) ? <DICOMDisplay url={selectedImage.cloudinaryUrl} className="w-full max-h-96 object-contain"/> : <img
                 src={selectedImage.cloudinaryUrl}
-                alt={selectedImage.notes || "Asset Image"}
+                alt={selectedImage.patientDemographics.notes || "Asset Image"}
                 className="w-full max-h-96 object-contain"
               />}
               <Tabs className="w-full flex-wrap" defaultValue="body-parts">
@@ -274,6 +273,8 @@ const AssetGrid = () => {
                   </div>
                 </TabsContent>
               </Tabs>
+              <div className="w-full text-left">Clinical history: <span>{selectedImage.patientDemographics.clinicalHistory}</span></div>
+              <div className="w-full text-left">Notes: <span>{selectedImage.patientDemographics.notes}</span></div>
             </div>
           </DialogContent>
         </Dialog>

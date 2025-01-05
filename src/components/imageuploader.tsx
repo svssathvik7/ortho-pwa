@@ -1,10 +1,6 @@
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import {
-  Card,
-  CardContent,
-  CardFooter
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,7 +10,15 @@ import { Textarea } from "./ui/textarea";
 import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import DICOMDisplay from "./DICOMDisplay";
+import { IsDicom } from "./displayassets";
 
 // Define constants for file validation
 const ACCEPTED_FILE_TYPES = {
@@ -34,6 +38,7 @@ interface PatientDemographics {
   age: string;
   gender: string;
   clinicalHistory: string;
+  notes: string;
 }
 
 // Main FileUploader component
@@ -51,11 +56,11 @@ const FileUploader = () => {
   const [diagnosisTags, setDiagnosisTags] = useState("");
   const [classificationTags, setClassificationTags] = useState("");
   const [implantTags, setImplantTags] = useState("");
-  const [notes, setNotes] = useState("");
   const [demographics, setDemographics] = useState<PatientDemographics>({
     age: "",
     gender: "",
     clinicalHistory: "",
+    notes: ""
   });
 
   // Convert space-separated tags to arrays
@@ -69,7 +74,9 @@ const FileUploader = () => {
   // Validate file type and size
   const validateFile = (file: File) => {
     if (!Object.keys(ACCEPTED_FILE_TYPES).includes(file.type)) {
-      setError("Invalid file type. Please upload only JPEG, PNG, or DICOM files.");
+      setError(
+        "Invalid file type. Please upload only JPEG, PNG, or DICOM files."
+      );
       return false;
     }
     if (file.size > MAX_FILE_SIZE) {
@@ -84,7 +91,10 @@ const FileUploader = () => {
     setError(null);
     const validFiles = acceptedFiles.filter(validateFile);
     const filesWithPreviews = validFiles.map((file) => {
-      const isDicom = file.type === "application/dicom" || file.name.endsWith(".dicom") || file.name.endsWith(".dcm");
+      const isDicom =
+        file.type === "application/dicom" ||
+        file.name.endsWith(".dicom") ||
+        file.name.endsWith(".dcm");
       const preview = isDicom ? undefined : URL.createObjectURL(file); // No preview for DICOM
       return Object.assign(file, { preview, isDicom });
     });
@@ -136,7 +146,6 @@ const FileUploader = () => {
         diagnoses: parseTagString(diagnosisTags),
         classifications: parseTagString(classificationTags),
         implants: parseTagString(implantTags),
-        notes,
         patientDemographics: demographics,
         owner: email,
       };
@@ -239,12 +248,21 @@ const FileUploader = () => {
                 key={index}
                 className="relative group rounded-lg overflow-hidden"
               >
-                <div className="aspect-square relative">(
+                <div className="aspect-square relative">
+                  {IsDicom(file.name) ? (
+                    // Use DICOMDisplay for DICOM files
+                    <DICOMDisplay
+                      url={file.name || ""}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    // Use <img> for image files
                     <img
                       src={file.preview}
                       alt={file.name}
                       className="w-full h-full object-cover"
                     />
+                  )}
                   {uploadProgress[file.name] !== undefined &&
                     uploadProgress[file.name] < 100 && (
                       <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 p-2">
@@ -293,26 +311,70 @@ const FileUploader = () => {
 
         {/* Tags and Metadata Inputs */}
         <div className="space-y-2">
-          <Input
-            value={bodyPartTags}
-            onChange={(e) => setBodyPartTags(e.target.value)}
-            placeholder="Body part tags (separate with spaces)"
-          />
-          <Input
-            value={diagnosisTags}
-            onChange={(e) => setDiagnosisTags(e.target.value)}
-            placeholder="Diagnosis tags (separate with spaces)"
-          />
-          <Input
-            value={classificationTags}
-            onChange={(e) => setClassificationTags(e.target.value)}
-            placeholder="Classification tags (separate with spaces)"
-          />
-          <Input
-            value={implantTags}
-            onChange={(e) => setImplantTags(e.target.value)}
-            placeholder="Implant tags (separate with spaces)"
-          />
+        <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {bodyPartTags!="" && bodyPartTags.split(" ").map((tag) => (
+                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={bodyPartTags}
+                onChange={(e) => setBodyPartTags(e.target.value)}
+                placeholder="Enter body part..."
+                className="flex-1"
+              />
+            </div>
+          </div>
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {diagnosisTags!="" && diagnosisTags.split(" ").map((tag) => (
+                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={diagnosisTags}
+                onChange={(e) => setDiagnosisTags(e.target.value)}
+                placeholder="Enter diagnoses tags..."
+                className="flex-1"
+              />
+            </div>
+          </div>
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {classificationTags!="" && classificationTags.split(" ").map((tag) => (
+                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={classificationTags}
+                onChange={(e) => setClassificationTags(e.target.value)}
+                placeholder="Enter classification tags..."
+                className="flex-1"
+              />
+            </div>
+          </div>
+          <div className="space-y-2 w-full">
+            <div className="flex flex-wrap mb-2">
+              {implantTags!="" && implantTags.split(" ").map((tag) => (
+                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={implantTags}
+                onChange={(e) => setImplantTags(e.target.value)}
+                placeholder="Enter implant tags..."
+                className="flex-1"
+              />
+            </div>
+          </div>
 
           {/* Patient Demographics */}
           <div className="grid grid-cols-2 gap-2">
@@ -353,8 +415,11 @@ const FileUploader = () => {
 
           {/* Notes */}
           <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            value={demographics.notes}
+            onChange={(e) => setDemographics((prev) => ({
+              ...prev,
+              notes: e.target.value,
+            }))}
             placeholder="Additional notes"
             className="h-24"
           />

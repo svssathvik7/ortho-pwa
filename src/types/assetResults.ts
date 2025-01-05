@@ -8,11 +8,11 @@ type ImageResult = {
     diagnoses: string[];
     classifications: string[];
     implants: string[];
-    notes: string;
-    clinicalHistory: string;
     patientDemographics: {
       age: number;
+      notes: string;
       gender: string;
+      clinicalHistory: string;
     };
   }
   export default ImageResult;

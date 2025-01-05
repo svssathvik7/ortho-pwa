@@ -3,6 +3,11 @@ import ImageResult from "@/types/assetResults";
 import { useAuthStore } from "@/store/authStore";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge"; // Adjust this import based on your setup.
+import { IsDicom } from "./displayassets";
+import DICOMDisplay from "./DICOMDisplay";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Bolt, Hand, Search, Split } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface AssetResultsProps {
   images: ImageResult[];
@@ -35,92 +40,88 @@ export default function AssetResults({ images }: AssetResultsProps) {
 
       {/* Modal for Selected Image */}
       {selectedImage && (
-        <motion.div
-          initial={{ opacity: 0, scale: 1 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{
-            duration: 0.1,
-            ease: "easeOut",
-          }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 w-screen"
+        <Dialog
+          open={!!selectedImage}
+          onOpenChange={() => setSelectedImage(null)}
         >
-          <div className="bg-white rounded-lg shadow-md w-96 max-w-2xl p-6 relative max-h-screen h-fit overflow-y-scroll flex flex-col items-center justify-start">
-            {/* Close Button */}
-            <button
-              onClick={closeDetails}
-              className="absolute text-2xl top-2 right-2 text-red-500 hover:text-red-300"
-            >
-              &times;
-            </button>
-
-            {/* Image and Details */}
-            <img
-              src={selectedImage.cloudinaryUrl}
-              alt="Selected medical image"
-              className="w-64 aspect-square text-center h-auto object-contain mb-4"
-            />
-            <div>
-              <h3 className="text-lg font-semibold">Patient Information</h3>
-              <p>Age: {selectedImage.patientDemographics.age}</p>
-              <p>Gender: {selectedImage.patientDemographics.gender}</p>
-
-              {selectedImage.bodyParts.length > 0 && (
-                <p className="mt-2">
-                  Body Parts:
-                  <div className="flex flex-wrap gap-2 mt-1">
+          <DialogContent className="max-w-[80dvw] max-h-[70dvh] overflow-y-scroll">
+            <DialogHeader>
+              <DialogTitle>Asset Details</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center justify-center overflow-y-scroll">
+              {IsDicom(selectedImage.cloudinaryUrl) ? <DICOMDisplay url={selectedImage.cloudinaryUrl} className=""/> : <img
+                src={selectedImage.cloudinaryUrl}
+                alt={selectedImage.patientDemographics.notes || "Asset Image"}
+                className="w-full max-h-96 object-contain"
+              />}
+              <Tabs className="w-full flex-wrap" defaultValue="body-parts">
+                <TabsList className="flex-wrap w-full m-2">
+                  <TabsTrigger className="w-1/4" value="body-parts">
+                    <Hand />
+                  </TabsTrigger>
+                  <TabsTrigger className="w-1/4" value="diagnoses">
+                    <Search />
+                  </TabsTrigger>
+                  <TabsTrigger className="w-1/4" value="classification">
+                    <Split />
+                  </TabsTrigger>
+                  <TabsTrigger className="w-1/4" value="implants">
+                    <Bolt />
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="body-parts">
+                  <span className="text-black text-xl">
+                    {selectedImage.bodyParts.length == 0 && "No"} Body tags
+                  </span>
+                  <div className="flex flex-wrap gap-1">
                     {selectedImage.bodyParts.map((part) => (
-                      <Badge key={part}>{part}</Badge>
+                      <p className="rounded-full bg-yellow-500 text-white px-2">
+                        {part}
+                      </p>
                     ))}
                   </div>
-                </p>
-              )}
-
-              {selectedImage.diagnoses.length > 0 && (
-                <p className="mt-2">
-                  Diagnoses:
-                  <div className="flex flex-wrap gap-2 mt-1">
-                    {selectedImage.diagnoses.map((diagnosis) => (
-                      <Badge key={diagnosis}>{diagnosis}</Badge>
+                </TabsContent>
+                <TabsContent value="diagnoses">
+                  <span className="text-black text-xl">
+                    {selectedImage.diagnoses.length == 0 && "No"} Diagnoses tags
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedImage.diagnoses.map((diagnoses) => (
+                      <p className="rounded-full bg-yellow-500 text-white px-2">
+                        {diagnoses}
+                      </p>
                     ))}
                   </div>
-                </p>
-              )}
-
-              {selectedImage.classifications.length > 0 && (
-                <p className="mt-2">
-                  Classifications:
-                  <div className="flex flex-wrap gap-2 mt-1">
+                </TabsContent>
+                <TabsContent value="classification">
+                  <span className="text-black text-xl">
+                    {selectedImage.classifications.length == 0 && "No"}{" "}
+                    Classification tags
+                  </span>
+                  <div className="flex flex-wrap gap-1">
                     {selectedImage.classifications.map((classification) => (
-                      <Badge key={classification}>{classification}</Badge>
+                      <p className="rounded-full bg-yellow-500 text-white px-2">
+                        {classification}
+                      </p>
                     ))}
                   </div>
-                </p>
-              )}
-
-              {selectedImage.implants.length > 0 && (
-                <p className="mt-2">
-                  Implants:
-                  <div className="flex flex-wrap gap-2 mt-1">
+                </TabsContent>
+                <TabsContent value="implants">
+                  <span className="text-black text-xl">
+                    {selectedImage.implants.length == 0 && "No"} Implant tags
+                  </span>
+                  <div className="flex flex-wrap gap-1">
                     {selectedImage.implants.map((implant) => (
-                      <Badge key={implant}>{implant}</Badge>
+                      <p className="rounded-full bg-yellow-500 text-white px-2">
+                        {implant}
+                      </p>
                     ))}
                   </div>
-                </p>
-              )}
-
-              {selectedImage.notes && (
-                <div className="mt-4 p-3 border rounded-lg bg-yellow-100">
-                  <h4 className="font-semibold text-yellow-700">Notes:</h4>
-                  <p className="text-yellow-800">{selectedImage.notes}</p>
-                </div>
-              )}
-
-              {selectedImage.owner !== email && (
-                <p className="mt-2">Asset by {selectedImage.owner}</p>
-              )}
+                </TabsContent>
+              </Tabs>
             </div>
-          </div>
-        </motion.div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
