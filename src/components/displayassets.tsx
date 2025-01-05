@@ -76,7 +76,9 @@ const AssetGrid = () => {
                   onClick={() => setSelectedImage(image)}
                 />
               ) : (
-                <DICOMDisplay url={image.cloudinaryUrl} />
+                <div onClick={() => setSelectedImage(image)}>
+                  <DICOMDisplay url={image.cloudinaryUrl}/>
+                </div>
               )}
 
               <div className="hidden w-full lg:flex items-center justify-around absolute top-0 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-2 bg-black bg-opacity-50">
@@ -201,12 +203,12 @@ const AssetGrid = () => {
             <DialogHeader>
               <DialogTitle>Asset Details</DialogTitle>
             </DialogHeader>
-            <div className="flex flex-col items-center justify-center">
-              <img
+            <div className="flex flex-col items-center justify-center overflow-y-scroll">
+              {IsDicom(selectedImage.cloudinaryUrl) ? <DICOMDisplay url={selectedImage.cloudinaryUrl} className=""/> : <img
                 src={selectedImage.cloudinaryUrl}
                 alt={selectedImage.notes || "Asset Image"}
                 className="w-full max-h-96 object-contain"
-              />
+              />}
               <Tabs className="w-full flex-wrap" defaultValue="body-parts">
                 <TabsList className="flex-wrap w-full m-2">
                   <TabsTrigger className="w-1/4" value="body-parts">
