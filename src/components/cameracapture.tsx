@@ -33,7 +33,14 @@ const parseTagString = (tagString: string): string[] => {
 const CameraCapture = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-
+  const [patientName, setPatientName] = useState("");
+  const [patientData,setPatientData] = useState({
+    name: "",
+    age: "",
+    gender: ""
+  });
+  const [patientSuggestions, setPatientSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -46,12 +53,47 @@ const CameraCapture = () => {
     age: "",
     gender: "",
     clinical_history: "",
-    notes: ""
+    notes: "",
   });
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
-  const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
 
   const email = useAuthStore((state) => state.email);
+  useEffect(() => {
+    if (patientName) {
+      setPatientData({name:"",age:"",gender:""});
+      const fetchSuggestions = async () => {
+        const response = await api.get(
+          `/api/patients/suggestions/${email+patientName}`
+        );
+        setPatientSuggestions(response.data.patients || []);
+        console.log(response.data.patients);
+        setShowSuggestions(true);
+      };
+      fetchSuggestions();
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [patientName]);
+
+  const handleSelectSuggestion = async(suggestion: any) => {
+    setPatientName(suggestion.name);
+    try {
+      const response = (await api.get(`/api/patients/${email+suggestion.name}`)).data;
+      setPatientData({
+        age: response.patient.age,
+        gender: response.patient.gender,
+        name: response.patient.name,
+      });
+      console.log(response.data.patient);
+    } catch (error) {
+      console.log(error);
+    }
+    finally{
+      setShowSuggestions(false);
+    }
+  };
+
+  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
 
   const dataURLtoFile = (dataUrl: string, filename: string): File => {
     const arr = dataUrl.split(",");
@@ -326,9 +368,17 @@ const CameraCapture = () => {
         <div className="space-y-2 m-2">
           <div className="space-y-2 w-full">
             <div className="flex flex-wrap mb-2">
-              {bodyPartTags!="" && bodyPartTags.split(" ").map((tag) => (
-                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
-              ))}
+              {bodyPartTags != "" &&
+                bodyPartTags
+                  .split(" ")
+                  .map(
+                    (tag) =>
+                      tag != "" && (
+                        <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                          {tag}
+                        </span>
+                      )
+                  )}
             </div>
             <div className="flex gap-2">
               <Input
@@ -342,9 +392,17 @@ const CameraCapture = () => {
           </div>
           <div className="space-y-2 w-full">
             <div className="flex flex-wrap mb-2">
-              {diagnosisTags!="" && diagnosisTags.split(" ").map((tag) => (
-                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
-              ))}
+              {diagnosisTags != "" &&
+                diagnosisTags
+                  .split(" ")
+                  .map(
+                    (tag) =>
+                      tag != "" && (
+                        <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                          {tag}
+                        </span>
+                      )
+                  )}
             </div>
             <div className="flex gap-2">
               <Input
@@ -358,9 +416,17 @@ const CameraCapture = () => {
           </div>
           <div className="space-y-2 w-full">
             <div className="flex flex-wrap mb-2">
-              {classificationTags!="" && classificationTags.split(" ").map((tag) => (
-                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
-              ))}
+              {classificationTags != "" &&
+                classificationTags
+                  .split(" ")
+                  .map(
+                    (tag) =>
+                      tag != "" && (
+                        <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                          {tag}
+                        </span>
+                      )
+                  )}
             </div>
             <div className="flex gap-2">
               <Input
@@ -374,9 +440,17 @@ const CameraCapture = () => {
           </div>
           <div className="space-y-2 w-full">
             <div className="flex flex-wrap mb-2">
-              {implantTags!="" && implantTags.split(" ").map((tag) => (
-                tag!="" && <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">{tag}</span>
-              ))}
+              {implantTags != "" &&
+                implantTags
+                  .split(" ")
+                  .map(
+                    (tag) =>
+                      tag != "" && (
+                        <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                          {tag}
+                        </span>
+                      )
+                  )}
             </div>
             <div className="flex gap-2">
               <Input
@@ -388,8 +462,35 @@ const CameraCapture = () => {
               />
             </div>
           </div>
+          {/* patient data */}
+          <Input
+            value={patientName}
+            onChange={(e) => setPatientName(e.target.value)}
+            placeholder="Enter patient name..."
+            className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+          />
+          {showSuggestions && patientSuggestions.length > 0 && (
+            <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
+              {patientSuggestions.map((suggestion:any, index) => (
+                <li
+                  key={index}
+                  onClick={() => handleSelectSuggestion(suggestion)}
+                  className="w-full cursor-pointer hover:bg-blue-100"
+                >
+                  {suggestion.name}
+                </li>
+              ))}
+            </ul>
+          )}
+          {patientData.name != "" && (
+            <div>
+              <p className="text-black">{patientData?.name}</p>
+              <p className="text-black">{patientData?.age}</p>
+              <p className="text-black">{patientData?.gender}</p>
+            </div>
+          )}
           {/* Patient Demographics */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* <div className="grid grid-cols-2 gap-2">
             <Input
               value={demographics.age}
               onChange={(e) =>
@@ -413,7 +514,7 @@ const CameraCapture = () => {
                 <SelectItem value="other">Other</SelectItem>
               </SelectContent>
             </Select>
-          </div>
+          </div> */}
           <Input
             value={demographics.clinical_history}
             onChange={(e) =>
