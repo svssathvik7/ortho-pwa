@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cornerstonejs/core": "^2.14.7",
+    "@cornerstonejs/tools": "^2.14.7",
     "@hookform/resolvers": "^3.9.1",
     "@lunit/insight-viewer": "^7.2.2",
     "@radix-ui/react-avatar": "^1.1.2",
@@ -24,6 +26,8 @@
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cornerstone-wado-image-loader": "^4.13.2",
+    "dcmjs-imaging": "^0.1.27",
     "dicom-parser": "^1.8.21",
     "dotenv": "^16.4.7",
     "lucide-react": "^0.469.0",
