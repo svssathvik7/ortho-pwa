@@ -22,13 +22,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Progress } from "@/components/ui/progress"; // Import progress bar
-
-const parseTagString = (tagString: string): string[] => {
-  return tagString
-    .trim()
-    .split(/\s+/)
-    .filter((tag) => tag.length > 0);
-};
+import { CAMERA_CONSTRAINTS, dataURLtoFile, getCameraError, parseTagString } from "@/utils/cameraUtils";
 
 const CameraCapture = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -95,36 +89,6 @@ const CameraCapture = () => {
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
 
-  const dataURLtoFile = (dataUrl: string, filename: string): File => {
-    const arr = dataUrl.split(",");
-    const mime = arr[0].match(/:(.*?);/)?.[1] || "image/jpeg";
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], filename, { type: mime });
-  };
-
-  const CAMERA_CONSTRAINTS = {
-    // Default constraints for desktop
-    desktop: {
-      video: {
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-    },
-    // Mobile-specific constraints
-    mobile: {
-      video: {
-        facingMode: { ideal: "environment" }, // Prefer back camera
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-    },
-  };
-
   const checkCameraPermissions = async () => {
     try {
       const permissions = await navigator.permissions.query({
@@ -152,31 +116,23 @@ const CameraCapture = () => {
       }
     }
   };
-
   const startWebcam = async () => {
     try {
       // First, check permissions
       await checkCameraPermissions();
-
       // Select appropriate constraints based on device type
       const constraints = isMobileDevice
         ? CAMERA_CONSTRAINTS.mobile
         : CAMERA_CONSTRAINTS.desktop;
-
       console.log("Using constraints:", constraints); // Debug log
-
       // Request camera access with appropriate constraints
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-      console.log("Stream received:", stream.active); // Debug log
-
       if (videoRef.current) {
         // Ensure video element is ready
         videoRef.current.srcObject = null; // Clear any existing source
         videoRef.current.srcObject = stream;
         videoRef.current.setAttribute("playsinline", "true");
         videoRef.current.setAttribute("autoplay", "true");
-
         // Add event listeners to ensure video is playing
         videoRef.current.onloadedmetadata = () => {
           console.log("Video metadata loaded"); // Debug log
@@ -184,36 +140,15 @@ const CameraCapture = () => {
             ?.play()
             .catch((e) => console.error("Play failed:", e));
         };
-
         videoRef.current.onerror = (e) => {
           console.error("Video error:", e); // Debug log
         };
       }
-
       setMediaStream(stream);
-    } catch (error) {
+    } catch (error:any) {
       console.error("Error accessing webcam:", error);
       // ... (previous error handling remains the same)
-      let errorMessage = "Failed to access camera. ";
-
-      if (error instanceof DOMException) {
-        switch (error.name) {
-          case "NotAllowedError":
-            errorMessage +=
-              "Please grant camera permissions in your browser settings.";
-            break;
-          case "NotFoundError":
-            errorMessage += "No camera device was found.";
-            break;
-          case "NotReadableError":
-            errorMessage += "Camera is already in use by another application.";
-            break;
-          default:
-            errorMessage +=
-              "Please check your camera permissions and try again.";
-        }
-      }
-
+      let errorMessage = "Failed to access camera. " + getCameraError(error);
       toast({
         title: "Camera Error",
         description: errorMessage,
@@ -483,10 +418,9 @@ const CameraCapture = () => {
             </ul>
           )}
           {patientData.name != "" && (
-            <div>
-              <p className="text-black">{patientData?.name}</p>
-              <p className="text-black">{patientData?.age}</p>
-              <p className="text-black">{patientData?.gender}</p>
+            <div className="w-full flex items-center justify-between px-2">
+              <p className="text-black">Age: {patientData?.age}</p>
+              <p className="text-black">Gender: {patientData?.gender}</p>
             </div>
           )}
           {/* Patient Demographics */}

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,50 @@ const FileUploader = () => {
     clinical_history: "",
     notes: ""
   });
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  const [patientName, setPatientName] = useState("");
+  const [patientData,setPatientData] = useState({
+    name: "",
+    age: "",
+    gender: ""
+  });
+  const [patientSuggestions, setPatientSuggestions] = useState([]);
+
+  useEffect(() => {
+    if (patientName) {
+      setPatientData({name:"",age:"",gender:""});
+      const fetchSuggestions = async () => {
+        const response = await api.get(
+          `/api/patients/suggestions/${email+patientName}`
+        );
+        setPatientSuggestions(response.data.patients || []);
+        console.log(response.data.patients);
+        setShowSuggestions(true);
+      };
+      fetchSuggestions();
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [patientName]);
+
+  const handleSelectSuggestion = async(suggestion: any) => {
+    setPatientName(suggestion.name);
+    try {
+      const response = (await api.get(`/api/patients/${email+suggestion.name}`)).data;
+      setPatientData({
+        age: response.patient.age,
+        gender: response.patient.gender,
+        name: response.patient.name,
+      });
+      console.log(response.data.patient);
+    } catch (error) {
+      console.log(error);
+    }
+    finally{
+      setShowSuggestions(false);
+    }
+  };
 
   // Convert space-separated tags to arrays
   const parseTagString = (tagString: string): string[] => {
@@ -375,33 +419,31 @@ const FileUploader = () => {
               />
             </div>
           </div>
-
-          {/* Patient Demographics */}
-          <div className="grid grid-cols-2 gap-2">
-            <Input
-              value={demographics.age}
-              onChange={(e) =>
-                setDemographics((prev) => ({ ...prev, age: e.target.value }))
-              }
-              placeholder="Age"
-              required
-            />
-            <Select
-              value={demographics.gender}
-              onValueChange={(value) =>
-                setDemographics((prev) => ({ ...prev, gender: value }))
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Input
+            value={patientName}
+            onChange={(e) => setPatientName(e.target.value)}
+            placeholder="Enter patient name..."
+            className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+          />
+          {showSuggestions && patientSuggestions.length > 0 && (
+            <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
+              {patientSuggestions.map((suggestion:any, index) => (
+                <li
+                  key={index}
+                  onClick={() => handleSelectSuggestion(suggestion)}
+                  className="w-full cursor-pointer hover:bg-blue-100"
+                >
+                  {suggestion.name}
+                </li>
+              ))}
+            </ul>
+          )}
+          {patientData.name != "" && (
+            <div className="w-full flex items-center justify-between px-2">
+              <p className="text-black">Age: {patientData?.age}</p>
+              <p className="text-black">Gender: {patientData?.gender}</p>
+            </div>
+          )}
           <Input
             value={demographics.clinical_history}
             onChange={(e) =>
