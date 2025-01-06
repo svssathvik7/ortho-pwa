@@ -450,16 +450,17 @@ const FileUploader = () => {
             </div>
               {classificationSuggestions.length > 0 && (
               <ul className="z-10 w-full mt-1 bg-white text-black border rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                {classificationSuggestions.map((suggestion: any, index) => (
-                  <li
-                    key={index}
-                    onClick={() => handleClassificationSuggestion(suggestion)}
-                    className="px-3 py-2 cursor-pointer hover:bg-blue-50 transition-colors"
-                  >
-                    {suggestion.tag}
-                  </li>
-                ))}
-              </ul>
+              {classificationSuggestions.map((suggestion: any, index) => (
+                <li
+                  key={index}
+                  onClick={() => handleClassificationSuggestion(suggestion)}
+                  className="p-1 h-48 overflow-y-scroll cursor-pointer hover:bg-blue-50 transition-colors"
+                >
+
+                  <img className="object-contain h-32" key={index} src={suggestion.url}/>
+                </li>
+              ))}
+            </ul>
             )}
           </div>
           <div className="space-y-2 w-full">

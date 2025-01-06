@@ -422,11 +422,10 @@ const CameraCapture = () => {
                   <li
                     key={index}
                     onClick={() => handleClassificationSuggestion(suggestion)}
-                    className="px-3 py-2 cursor-pointer hover:bg-blue-50 transition-colors"
+                    className="p-1 h-48 overflow-y-scroll cursor-pointer hover:bg-blue-50 transition-colors"
                   >
 
-                    {suggestion.tag}
-                    <img key={index} src={suggestion.url}/>
+                    <img className="object-contain h-32" key={index} src={suggestion.url}/>
                   </li>
                 ))}
               </ul>
