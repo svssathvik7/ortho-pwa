@@ -289,41 +289,41 @@ export default function DICOMViewer({
   }, [renderImage]);
 
   // UI handlers
-  const handleZoomIn = (e: any): void => {
-    e.stopPropagation();
-    setViewState(prev => ({
-      ...prev,
-      scale: Math.min(5, prev.scale * 1.2)
-    }));
-  };
+  // const handleZoomIn = (e: any): void => {
+  //   e.stopPropagation();
+  //   setViewState(prev => ({
+  //     ...prev,
+  //     scale: Math.min(5, prev.scale * 1.2)
+  //   }));
+  // };
   
-  const handleZoomOut = (e: any): void => {
-    e.stopPropagation();
-    setViewState(prev => ({
-      ...prev,
-      scale: Math.max(0.1, prev.scale / 1.2)
-    }));
-  };
+  // const handleZoomOut = (e: any): void => {
+  //   e.stopPropagation();
+  //   setViewState(prev => ({
+  //     ...prev,
+  //     scale: Math.max(0.1, prev.scale / 1.2)
+  //   }));
+  // };
   
-  const handleRotate = (e: any): void => {
-    e.stopPropagation();
-    setViewState(prev => ({
-      ...prev,
-      rotation: (prev.rotation + 90) % 360
-    }));
-  };
+  // const handleRotate = (e: any): void => {
+  //   e.stopPropagation();
+  //   setViewState(prev => ({
+  //     ...prev,
+  //     rotation: (prev.rotation + 90) % 360
+  //   }));
+  // };
   
-  const handleReset = (e: any): void => {
-    e.stopPropagation();
-    if (dicomImage) {
-      setViewState({
-        scale: 1,
-        rotation: 0,
-        windowCenter: dicomImage.windowCenter,
-        windowWidth: dicomImage.windowWidth
-      });
-    }
-  };
+  // const handleReset = (e: any): void => {
+  //   e.stopPropagation();
+  //   if (dicomImage) {
+  //     setViewState({
+  //       scale: 1,
+  //       rotation: 0,
+  //       windowCenter: dicomImage.windowCenter,
+  //       windowWidth: dicomImage.windowWidth
+  //     });
+  //   }
+  // };
   
 
   if (error) {
@@ -351,16 +351,13 @@ export default function DICOMViewer({
           </div>
         )}
         
-        <div className="flex flex-col">
-          <div className="relative overflow-auto border rounded-lg">
             <canvas
               ref={canvasRef}
-              className="w-full aspect-square object-cover max-h-72 cursor-pointer"
+              className={`${className}`}
               style={{ display: loading ? 'none' : 'block' }}
             />
-          </div>
 
-          {!loading && dicomImage && (
+          {/* {!loading && dicomImage && (
             <div className="flex flex-col gap-4 p-4 border rounded-lg">
               <div className="flex gap-2">
                 <Button onClick={handleZoomIn} variant="outline" size="icon">
@@ -377,9 +374,8 @@ export default function DICOMViewer({
                 </Button>
               </div>
             </div>
-          )}
+          )} */}
         </div>
-      </div>
     </Card>
   );
 }

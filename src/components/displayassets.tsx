@@ -76,7 +76,7 @@ const AssetGrid = () => {
                 />
               ) : (
                 <div onClick={() => setSelectedImage(image)}>
-                  <DICOMDisplay url={image.cloudinaryUrl}/>
+                  <DICOMDisplay className="w-full aspect-square object-cover max-h-72 cursor-pointer" url={image.cloudinaryUrl}/>
                 </div>
               )}
 
@@ -203,7 +203,7 @@ const AssetGrid = () => {
               <DialogTitle>Asset Details</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center justify-center overflow-y-scroll">
-              {IsDicom(selectedImage.cloudinaryUrl) ? <DICOMDisplay url={selectedImage.cloudinaryUrl} className="w-full max-h-96 object-contain"/> : <img
+              {IsDicom(selectedImage.cloudinaryUrl) ? <DICOMDisplay url={selectedImage.cloudinaryUrl} className="w-full max-h-80 object-contain"/> : <img
                 src={selectedImage.cloudinaryUrl}
                 alt={selectedImage.patientDemographics.notes || "Asset Image"}
                 className="w-full max-h-96 object-contain"
