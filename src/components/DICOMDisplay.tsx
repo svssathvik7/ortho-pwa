@@ -289,22 +289,32 @@ export default function DICOMViewer({
   }, [renderImage]);
 
   // UI handlers
-  const handleZoomIn = () => setViewState(prev => ({ 
-    ...prev, 
-    scale: Math.min(5, prev.scale * 1.2) 
-  }));
+  const handleZoomIn = (e: any): void => {
+    e.stopPropagation();
+    setViewState(prev => ({
+      ...prev,
+      scale: Math.min(5, prev.scale * 1.2)
+    }));
+  };
   
-  const handleZoomOut = () => setViewState(prev => ({ 
-    ...prev, 
-    scale: Math.max(0.1, prev.scale / 1.2) 
-  }));
+  const handleZoomOut = (e: any): void => {
+    e.stopPropagation();
+    setViewState(prev => ({
+      ...prev,
+      scale: Math.max(0.1, prev.scale / 1.2)
+    }));
+  };
   
-  const handleRotate = () => setViewState(prev => ({ 
-    ...prev, 
-    rotation: (prev.rotation + 90) % 360 
-  }));
+  const handleRotate = (e: any): void => {
+    e.stopPropagation();
+    setViewState(prev => ({
+      ...prev,
+      rotation: (prev.rotation + 90) % 360
+    }));
+  };
   
-  const handleReset = () => {
+  const handleReset = (e: any): void => {
+    e.stopPropagation();
     if (dicomImage) {
       setViewState({
         scale: 1,
@@ -314,6 +324,7 @@ export default function DICOMViewer({
       });
     }
   };
+  
 
   if (error) {
     return (
@@ -340,11 +351,11 @@ export default function DICOMViewer({
           </div>
         )}
         
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col">
           <div className="relative overflow-auto border rounded-lg">
             <canvas
               ref={canvasRef}
-              className="mx-auto"
+              className="w-full aspect-square object-cover max-h-72 cursor-pointer"
               style={{ display: loading ? 'none' : 'block' }}
             />
           </div>
@@ -364,40 +375,6 @@ export default function DICOMViewer({
                 <Button onClick={handleReset} variant="outline" size="icon">
                   <Maximize className="h-4 w-4" />
                 </Button>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Window Center: {viewState.windowCenter.toFixed(0)}</Label>
-                  <Slider
-                    value={[viewState.windowCenter]}
-                    min={dicomImage.minPixelValue}
-                    max={dicomImage.maxPixelValue}
-                    step={1}
-                    onValueChange={([value]) => 
-                      setViewState(prev => ({ 
-                        ...prev, 
-                        windowCenter: value ?? dicomImage.windowCenter 
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Window Width: {viewState.windowWidth.toFixed(0)}</Label>
-                  <Slider
-                    value={[viewState.windowWidth]}
-                    min={1}
-                    max={(dicomImage.maxPixelValue - dicomImage.minPixelValue) * 2}
-                    step={1}
-                    onValueChange={([value]) => 
-                      setViewState(prev => ({ 
-                        ...prev, 
-                        windowWidth: value ?? dicomImage.windowWidth 
-                      }))
-                    }
-                  />
-                </div>
               </div>
             </div>
           )}
