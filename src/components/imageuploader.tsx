@@ -53,15 +53,17 @@ const FileUploader = () => {
 
   // Metadata states
   const [bodyPartTags, setBodyPartTags] = useState("");
+  const [classificationSuggestions, setClassificationSuggestions] = useState([]);
   const [diagnosisTags, setDiagnosisTags] = useState("");
   const [classificationTags, setClassificationTags] = useState("");
   const [implantTags, setImplantTags] = useState("");
   const [demographics, setDemographics] = useState<PatientDemographics>({
     age: "",
-    gender: "",
+    gender: "other",
     clinical_history: "",
     notes: ""
   });
+
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [patientName, setPatientName] = useState("");
@@ -206,6 +208,50 @@ const FileUploader = () => {
       toast({ title: "Failed to upload file" });
       throw error;
     }
+  };
+
+
+  // Modified useEffect for classification suggestions
+  useEffect(() => {
+    const fetchClassificationSuggestions = async () => {
+      // Only fetch if there's text to search for
+      const lastTag = classificationTags.trim().split(/\s+/).pop();
+      if (lastTag && lastTag.length > 0) {
+        try {
+          const response = await api.get(`/api/classifications/${lastTag}`);
+          setClassificationSuggestions(response.data.classifications || []);
+        } catch (error) {
+          console.error('Error fetching suggestions:', error);
+          setClassificationSuggestions([]);
+        }
+      } else {
+        setClassificationSuggestions([]);
+      }
+    };
+
+    // Debounce the API call to prevent too many requests
+    const timeoutId = setTimeout(fetchClassificationSuggestions, 300);
+    return () => clearTimeout(timeoutId);
+  }, [classificationTags]);
+
+  const handleClassificationSuggestion = (suggestion: any) => {
+    // Get existing tags as an array
+    const existingTags = classificationTags
+      .trim()
+      .split(/\s+/)
+      .filter(tag => tag.length > 0);
+    
+    // Remove the partial tag that triggered the suggestion
+    existingTags.pop();
+    
+    // Add the selected suggestion
+    existingTags.push(suggestion.tag);
+    
+    // Update the classification tags state
+    setClassificationTags(existingTags.join(' ') + ' ');
+    
+    // Clear suggestions
+    setClassificationSuggestions([]);
   };
 
   // Upload all files
@@ -402,6 +448,20 @@ const FileUploader = () => {
                 className="flex-1"
               />
             </div>
+              {classificationSuggestions.length > 0 && (
+              <ul className="z-10 w-full mt-1 bg-white text-black border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+              {classificationSuggestions.map((suggestion: any, index) => (
+                <li
+                  key={index}
+                  onClick={() => handleClassificationSuggestion(suggestion)}
+                  className="p-1 h-48 overflow-y-scroll cursor-pointer hover:bg-blue-50 transition-colors"
+                >
+
+                  <img className="object-contain h-32" key={index} src={suggestion.url}/>
+                </li>
+              ))}
+            </ul>
+            )}
           </div>
           <div className="space-y-2 w-full">
             <div className="flex flex-wrap mb-2">
