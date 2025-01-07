@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import Navbar from "@/components/navbar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import Navbar from "../components/navbar";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
 import { Camera, User } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { useAuthStore } from "@/store/authStore";
-import api from "@/config/axios";
+import { toast } from "../hooks/use-toast";
+import { useAuthStore } from "../store/authStore";
+import api from "../config/axios";
 import { useNavigate } from "react-router-dom";
 
 type AccountData = {

@@ -1,10 +1,10 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import AssetUploader from '@/components/assetuploader';
-import AssetGrid from '@/components/displayassets';
-import ImageSearch from '@/components/assetSearch';
-import Navbar from '@/components/navbar';
-import { useAuthStore } from '@/store/authStore';
-import { toast } from '@/hooks/use-toast';
+import AssetUploader from '../components/assetuploader';
+import AssetGrid from '../components/displayassets';
+import ImageSearch from '../components/assetSearch';
+import Navbar from '../components/navbar';
+import { useAuthStore } from '../store/authStore';
+import { toast } from '../hooks/use-toast';
 import { useEffect } from 'react';
 
 export default function AssetCenter() {

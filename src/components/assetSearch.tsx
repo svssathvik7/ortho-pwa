@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import api from "@/config/axios";
-import { toast } from "@/hooks/use-toast";
-import ImageResult from "@/types/assetResults";
-import { useAuthStore } from "@/store/authStore";
+} from "../components/ui/select";
+import { Slider } from "../components/ui/slider";
+import api from "../config/axios";
+import { toast } from "../hooks/use-toast";
+import ImageResult from "../types/assetResults";
+import { useAuthStore } from "../store/authStore";
 import AssetResults from "./assetResults";
 
 // Interface for our search filters

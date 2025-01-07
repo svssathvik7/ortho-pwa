@@ -1,14 +1,14 @@
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore } from "../store/authStore";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { toast } from "@/hooks/use-toast";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "../hooks/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+} from "../components/ui/hover-card";
+import { Dialog, DialogContent, DialogTrigger } from "../components/ui/dialog";
 import {
   User,
   Folder,

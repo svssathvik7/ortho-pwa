@@ -1,11 +1,11 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
 import { useState } from 'react';
 import axios from "axios";
-import { toast } from '@/hooks/use-toast';
+import { toast } from '../hooks/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '../store/authStore';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const SigninForm = () => {
   const login = useAuthStore((state)=>state.login);

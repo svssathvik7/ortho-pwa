@@ -1,8 +1,8 @@
-import AssetResults from "@/components/assetResults";
-import Navbar from "@/components/navbar";
-import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
-import { useAuthStore } from "@/store/authStore";
+import AssetResults from "../components/assetResults";
+import Navbar from "../components/navbar";
+import { Label } from "../components/ui/label";
+import { toast } from "../hooks/use-toast";
+import { useAuthStore } from "../store/authStore";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
