@@ -203,7 +203,7 @@ const AssetGrid = () => {
               <DialogTitle>Asset Details</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center justify-center overflow-y-scroll">
-              {IsDicom(selectedImage.cloudinaryUrl) ? <DICOMDisplay url={selectedImage.cloudinaryUrl} className="w-full max-h-80 object-contain"/> : <img
+              {IsDicom(selectedImage.cloudinaryUrl) ? <DICOMDisplay url={selectedImage.cloudinaryUrl} className="w-fit aspect-square object-cover cursor-pointer"/> : <img
                 src={selectedImage.cloudinaryUrl}
                 alt={selectedImage.patientDemographics.notes || "Asset Image"}
                 className="w-full max-h-96 object-contain"
@@ -273,8 +273,8 @@ const AssetGrid = () => {
                   </div>
                 </TabsContent>
               </Tabs>
-              <div className="w-full text-left flex items-center justify-start m-2"><p className="text-lg">Clinical history: </p><span className="bg-yellow-200 p-2 m-2">{selectedImage.patientDemographics.clinical_history}</span></div>
-              <div className="w-full text-left flex items-center justify-start m-2"><p className="text-lg">Notes: </p><span className="bg-yellow-200 p-2 m-2">{selectedImage.patientDemographics.notes}</span></div>
+              {selectedImage.patientDemographics.clinical_history && <div className="w-full text-left flex items-center justify-start m-2"><p className="text-lg">Clinical history: </p><span className="bg-yellow-200 p-2 m-2">{selectedImage.patientDemographics.clinical_history}</span></div>}
+              {selectedImage.patientDemographics.notes && <div className="w-full text-left flex items-center justify-start m-2"><p className="text-lg">Notes: </p><span className="bg-yellow-200 p-2 m-2">{selectedImage.patientDemographics.notes}</span></div>}
             </div>
           </DialogContent>
         </Dialog>

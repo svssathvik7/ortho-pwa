@@ -354,7 +354,7 @@ export default function DICOMViewer({
             <canvas
               ref={canvasRef}
               className={`${className}`}
-              style={{ display: loading ? 'none' : 'block' }}
+              style={{ display: loading ? 'none' : 'inline-block' }}
             />
 
           {/* {!loading && dicomImage && (
