@@ -23,6 +23,8 @@ import {
 } from "./ui/select";
 import { Progress } from "@/components/ui/progress"; // Import progress bar
 import { CAMERA_CONSTRAINTS, dataURLtoFile, getCameraError, parseTagString } from "@/utils/cameraUtils";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { Label } from "./ui/label";
 
 const CameraCapture = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -33,6 +35,8 @@ const CameraCapture = () => {
     age: "",
     gender: ""
   });
+  const [isNewUser,setIsNewUser] = useState(false);
+  const [patientId,setPatientId] = useState("");
   const [patientSuggestions, setPatientSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
@@ -43,9 +47,10 @@ const CameraCapture = () => {
   const [diagnosisTags, setDiagnosisTags] = useState("");
   const [classificationTags, setClassificationTags] = useState("");
   const [classificationSuggestions, setClassificationSuggestions] = useState([]);
-
+  const [isOpen,setIsOpen] = useState(false);
   const [implantTags, setImplantTags] = useState("");
   const [demographics, setDemographics] = useState({
+    name: "",
     age: "",
     gender: "",
     clinical_history: "",
@@ -61,6 +66,12 @@ const CameraCapture = () => {
           `/api/patients/suggestions/${email+patientName}`
         );
         setPatientSuggestions(response.data.patients || []);
+        if(response.data.patients.length == 0){
+          setIsNewUser(true);
+        }
+        else{
+          setIsNewUser(false);
+        }
         console.log(response.data.patients);
         setShowSuggestions(true);
       };
@@ -79,6 +90,7 @@ const CameraCapture = () => {
         gender: response.patient.gender,
         name: response.patient.name,
       });
+      setIsNewUser(false);
       console.log(response.data.patient);
     } catch (error) {
       console.log(error);
@@ -87,6 +99,14 @@ const CameraCapture = () => {
       setShowSuggestions(false);
     }
   };
+
+  const handleSavePatient = async(e:any)=>{
+    e.preventDefault();
+    setIsNewUser(true);
+    setIsOpen(false);
+    setPatientId(email+demographics.name);
+    return;
+  }
 
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
@@ -262,6 +282,7 @@ const CameraCapture = () => {
       formData.append("file", imageFile);
 
       const metaData = {
+        patientId: patientId,
         bodyParts: parseTagString(bodyPartTags).map((tag) => tag.toLowerCase()),
         diagnoses: parseTagString(diagnosisTags).map((tag) =>
           tag.toLowerCase()
@@ -271,11 +292,14 @@ const CameraCapture = () => {
         ),
         implants: parseTagString(implantTags).map((tag) => tag.toLowerCase()),
         patientDemographics: {
+          name: demographics.name.toLowerCase(),
           age: demographics.age.toLowerCase(),
           gender: demographics.gender.toLowerCase(),
           clinicalHistory: demographics.clinical_history.toLowerCase(),
+          notes: demographics.notes.toLowerCase()
         },
         owner: email ? email.toLowerCase() : "",
+        isNewUser: isNewUser
       };
 
       formData.append("metadata", JSON.stringify(metaData));
@@ -462,19 +486,83 @@ const CameraCapture = () => {
             placeholder="Enter patient name..."
             className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
           />
-          {showSuggestions && patientSuggestions.length > 0 && (
-            <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
-              {patientSuggestions.map((suggestion:any, index) => (
-                <li
-                  key={index}
-                  onClick={() => handleSelectSuggestion(suggestion)}
-                  className="w-full cursor-pointer hover:bg-blue-100"
-                >
-                  {suggestion.name}
-                </li>
-              ))}
-            </ul>
-          )}
+          <Dialog open={isOpen}>
+  {showSuggestions && (patientSuggestions.length > 0 ? (
+    <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
+      {patientSuggestions.map((suggestion: any, index) => (
+        <li
+          key={index}
+          onClick={() => handleSelectSuggestion(suggestion)}
+          className="w-full cursor-pointer hover:bg-blue-100"
+        >
+          {suggestion.name}
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <DialogTrigger className="w-full">
+      <Button onClick={()=>setIsOpen(true)} className="w-full px-2">Add patient</Button>
+    </DialogTrigger>
+  ))}
+  <DialogContent>
+    <div className="flex justify-between items-center border-b pb-2 mb-4">
+      <DialogTitle>Create a Patient</DialogTitle>
+    </div>
+    <form onSubmit={handleSavePatient}>
+      <div className="mb-4">
+        <label htmlFor="patientName" className="block text-sm font-medium">
+          Patient Name
+        </label>
+        <Input
+          id="patientName"
+          type="text"
+          required
+          className="w-full mt-1 p-2 border rounded-md"
+          value={demographics.name}
+          onChange={(e)=>setDemographics((prev)=>({...prev,name:e.target.value}))}
+        />
+      </div>
+      <div className="mb-4">
+        <Label htmlFor="patientAge" className="block text-sm font-medium">
+          Age
+        </Label>
+        <Input
+          id="patientAge"
+          type="number"
+          required
+          min={0}
+          className="w-full mt-1 p-2 border rounded-md"
+          value={demographics.age}
+          onChange={(e)=>setDemographics((prev)=>({...prev,age:e.target.value}))}
+        />
+      </div>
+      <div className="mb-4">
+        <Label htmlFor="patientGender" className="block text-sm font-medium">
+          Gender
+        </Label>
+        <select
+          id="patientGender"
+          required
+          className="w-full mt-1 p-2 border rounded-md"
+          value={demographics.gender}
+          onChange={(e)=>setDemographics((prev)=>({...prev,gender:e.target.value}))}
+        >
+          <option value="">Select</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+        <Button 
+          type="submit" 
+          className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+        >
+          Save
+        </Button>
+    </form>
+  </DialogContent>
+</Dialog>
+
           {patientData.name != "" && (
             <div className="w-full flex items-center justify-between px-2">
               <p className="text-black">Age: {patientData?.age}</p>
