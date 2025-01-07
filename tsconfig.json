@@ -5,8 +5,9 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
-    "strict": true,
-    "esModuleInterop": true
-  },
-  "include": ["src", "src/types"]
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
 }
