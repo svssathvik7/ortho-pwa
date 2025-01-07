@@ -211,7 +211,7 @@ const FileUploader = () => {
           gender: demographics.gender.toLowerCase()
         },
         owner: email ? email.toLowerCase() : "",
-        isNewUser: isNewUser,
+        isNewPatient: isNewUser,
         notes,
         clinical_history
       };

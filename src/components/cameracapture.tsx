@@ -60,8 +60,6 @@ const CameraCapture = () => {
     name: "",
     age: "",
     gender: "",
-    clinical_history: "",
-    notes: "",
   });
 
   const email = useAuthStore((state) => state.email);
@@ -115,6 +113,8 @@ const CameraCapture = () => {
     return;
   };
 
+  const [clinical_history,setClinicalHistory] = useState("");
+  const [notes,setNotes] = useState("");
   const [isMobileDevice, setIsMobileDevice] = useState(false);
   const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
 
@@ -300,13 +300,13 @@ const CameraCapture = () => {
         implants: parseTagString(implantTags).map((tag) => tag.toLowerCase()),
         patientDemographics: {
           name: demographics.name.toLowerCase(),
-          age: demographics.age.toLowerCase(),
+          age: demographics.age,
           gender: demographics.gender.toLowerCase(),
-          clinicalHistory: demographics.clinical_history.toLowerCase(),
-          notes: demographics.notes.toLowerCase(),
         },
+        clinicalHistory: clinical_history.toLowerCase(),
+        notes: notes.toLowerCase(),
         owner: email ? email.toLowerCase() : "",
-        isNewUser: isNewUser,
+        isNewPatient: isNewUser,
       };
 
       formData.append("metadata", JSON.stringify(metaData));
@@ -636,24 +636,17 @@ const CameraCapture = () => {
             </Select>
           </div> */}
           <Input
-            value={demographics.clinical_history}
-            onChange={(e) =>
-              setDemographics((prev) => ({
-                ...prev,
-                clinical_history: e.target.value,
-              }))
-            }
+            value={clinical_history}
+            onChange={(e)=>setClinicalHistory(e.target.value)}
             placeholder="Clinical History"
           />
-          <Input
-            value={demographics.notes}
-            onChange={(e) =>
-              setDemographics((prev) => ({
-                ...prev,
-                notes: e.target.value,
-              }))
-            }
-            placeholder="Notes"
+
+          {/* Notes */}
+          <Textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Additional notes"
+            className="h-24"
           />
         </div>
 
