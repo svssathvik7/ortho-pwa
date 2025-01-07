@@ -1,8 +1,5 @@
 import { useState } from "react";
 import ImageResult from "@/types/assetResults";
-import { useAuthStore } from "@/store/authStore";
-import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge"; // Adjust this import based on your setup.
 import { IsDicom } from "./displayassets";
 import DICOMDisplay from "./DICOMDisplay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
@@ -16,8 +13,6 @@ interface AssetResultsProps {
 export default function AssetResults({ images }: AssetResultsProps) {
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
 
-  const closeDetails = () => setSelectedImage(null);
-  const email = useAuthStore((state) => state.email);
 
   return (
     <div className="relative w-full h-full">

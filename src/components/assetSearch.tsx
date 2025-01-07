@@ -13,9 +13,7 @@ import { Slider } from "@/components/ui/slider";
 import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
 import ImageResult from "@/types/assetResults";
-import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import AssetDisplay from "@/pages/AssetResults";
 import AssetResults from "./assetResults";
 
 // Interface for our search filters
@@ -75,7 +73,6 @@ const ImageSearch = () => {
   ) => {
     setSelectedTags(selectedTags.filter((tag) => tag !== tagToRemove));
   };
-  const navigate = useNavigate();
   // Function to perform the search
   const email = useAuthStore((state)=>state.email);
   const handleSearch = async () => {

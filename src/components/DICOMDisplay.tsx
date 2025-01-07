@@ -1,11 +1,6 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
-import { Slider } from '@/components/ui/slider';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import dicomParser from 'dicom-parser';
-import { ZoomIn, ZoomOut, RotateCw, Maximize } from 'lucide-react';
-
 // Define types for our DICOM image data
 interface DicomImageProps {
   width: number;
@@ -69,7 +64,7 @@ export default function DICOMViewer({
   url,
   onError,
   className = ''
-}: DICOMViewerProps): JSX.Element {
+}: DICOMViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

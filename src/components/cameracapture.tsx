@@ -14,13 +14,6 @@ import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
 import { Progress } from "@/components/ui/progress"; // Import progress bar
 import {
   CAMERA_CONSTRAINTS,
@@ -115,7 +108,7 @@ const CameraCapture = () => {
 
   const [clinical_history,setClinicalHistory] = useState("");
   const [notes,setNotes] = useState("");
-  const [isMobileDevice, setIsMobileDevice] = useState(false);
+  const [isMobileDevice, _setIsMobileDevice] = useState(false);
   const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
 
   const checkCameraPermissions = async () => {
@@ -312,7 +305,7 @@ const CameraCapture = () => {
       formData.append("metadata", JSON.stringify(metaData));
 
       // Upload request with progress tracking
-      const response = await api.post("/api/assets/upload", formData, {
+      await api.post("/api/assets/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
           if (progressEvent.total) {

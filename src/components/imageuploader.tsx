@@ -30,12 +30,6 @@ interface FileWithPreview extends File {
   uploadUrl?: string;
 }
 
-interface PatientDemographics {
-  age: string;
-  gender: string;
-  name: string;
-}
-
 // Main FileUploader component
 const FileUploader = () => {
   // File states
@@ -73,7 +67,7 @@ const FileUploader = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [patientName, setPatientName] = useState("");
-  const [patientData,setPatientData] = useState({
+  const [_patientData,setPatientData] = useState({
     name: "",
     age: "",
     gender: ""

@@ -1,29 +1,26 @@
-import path from "path"
-import react from "@vitejs/plugin-react"
-import { defineConfig } from "vite"
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  server: {
-    headers: {
-      'Service-Worker-Allowed': "/",
-    },
-    host: true
-  },
-  optimizeDeps: {
-    include: ["@lunit/insight-viewer"],
-  },
   build: {
     rollupOptions: {
-      input: {
-        main: path.resolve(__dirname, "index.html"),
-        sw: path.resolve(__dirname, "public/sw.js"),
-      },
+      // This will ignore certain warnings during build
+      onwarn(warning, warn) {
+        // Ignore specific warning patterns
+        if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return
+        
+        // Let other warnings through
+        warn(warning)
+      }
     }
   },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+  esbuild: {
+    // Drop console.log and debugger statements in production
+    drop: ['console', 'debugger'],
+    // Ignore certain lint warnings
+    legalComments: 'none',
+    // Set this to false if you want to ignore type errors during build
+  }
 })

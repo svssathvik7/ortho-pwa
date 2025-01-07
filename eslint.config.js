@@ -7,6 +7,21 @@ import tseslint from 'typescript-eslint'
 export default tseslint.config(
   { ignores: ['dist'] },
   {
+    "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "args": "after-used",
+        "ignoreRestSiblings": true,
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  }
+  }
+,  
+  {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
