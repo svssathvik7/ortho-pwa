@@ -5,6 +5,7 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
+    "strict": false,
     "noUnusedLocals": false, // Suppress unused local imports warnings
     "noUnusedParameters": false,
     "baseUrl": ".",

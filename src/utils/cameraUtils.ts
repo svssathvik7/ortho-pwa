@@ -4,7 +4,6 @@ export const parseTagString = (tagString: string): string[] => {
     .split(/\s+/)
     .filter((tag) => tag.length > 0);
 };
-
 export const CAMERA_CONSTRAINTS = {
   // Default constraints for desktop
   desktop: {

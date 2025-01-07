@@ -13,7 +13,6 @@
     "@cornerstonejs/core": "^2.14.9",
     "@cornerstonejs/tools": "^2.14.9",
     "@hookform/resolvers": "^3.10.0",
-    "@lunit/insight-viewer": "^7.2.2",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-hover-card": "^1.1.4",
@@ -36,7 +35,6 @@
     "mongoose": "^8.9.3",
     "motion": "^11.16.0",
     "react": "^19.0.0",
-    "react-camera-pro": "^1.4.0",
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.5",
     "react-hook-form": "^7.54.2",
@@ -46,7 +44,6 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "yarn-upgrade-all": "^0.7.4",
-    "zod": "^3.24.1",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

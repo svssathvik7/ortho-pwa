@@ -1,47 +1,47 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
+import { Button } from '../components/ui/button';
 import { useState } from 'react';
 import axios from "axios";
-import { toast } from '@/hooks/use-toast';
+import { toast } from '../hooks/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
+import { useAuthStore } from '../store/authStore';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
 const SigninForm = () => {
-  const login = useAuthStore((state)=>state.login);
+  const login = useAuthStore((state) => state.login);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [loading, setLoading] = useState(false); // Track loading state
   const navigate = useNavigate();
-  const handleSubmit = async(e:any) => {
+
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    // Handle form submission logic here
+    setLoading(true); // Show loader when the request starts
+
     try {
-      const response = (await axios.post(`${backendUrl}/api/auth/login`,formData)).data;
-      login(response.data.email,response.data.dp);
-      toast(
-        {
-          title: "Successfully loggedin!"
-        }
-      )
-      console.log("At login",response);
+      const response = (await axios.post(`${backendUrl}/api/auth/login`, formData)).data;
+      login(response.data.email, response.data.dp);
+      toast({
+        title: "Successfully logged in!"
+      });
+      console.log("At login", response);
       navigate("/");
-      return;
-    } catch (error:any) {
-      console.log("At login",error);
-      const errorText = error?.response?.data?.message??"";
-      toast(
-        {
-          title: "Failed to login!",
-          description: errorText
-        }
-      )
-      return;
+    } catch (error: any) {
+      console.log("At login", error);
+      const errorText = error?.response?.data?.message ?? "";
+      toast({
+        title: "Failed to login!",
+        description: errorText
+      });
+    } finally {
+      setLoading(false); // Hide loader when the request completes
     }
   };
 
-  const handleChange = (e:any) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -84,13 +84,21 @@ const SigninForm = () => {
             />
           </div>
           <div className='w-full h-fit p-2 flex items-center justify-end'>
-              <p>Don't have an account?</p>
-              <Link to='/auth/register' className='px-4 mx-1'><Button className='px-2' type='button'>Register</Button></Link>
+            <p>Don't have an account?</p>
+            <Link to='/auth/register' className='px-4 mx-1'>
+              <Button className='px-2' type='button'>Register</Button>
+            </Link>
           </div>
 
-          <Button type="submit" className="w-full">
-            Sign In
-          </Button>
+          {loading ? (
+            <Button type="button" className="w-full" disabled>
+              Loading...
+            </Button>
+          ) : (
+            <Button type="submit" className="w-full">
+              Sign In
+            </Button>
+          )}
         </form>
       </CardContent>
     </Card>

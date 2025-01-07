@@ -1,5 +1,5 @@
 import { useState } from "react";
-import ImageResult from "@/types/assetResults";
+import ImageResult from "../types/assetResults";
 import { IsDicom } from "./displayassets";
 import DICOMDisplay from "./DICOMDisplay";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";

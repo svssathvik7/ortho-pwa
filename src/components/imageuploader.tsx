@@ -1,15 +1,15 @@
 import { useState, useCallback, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardContent, CardFooter } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Progress } from "../components/ui/progress";
+import { Alert, AlertDescription } from "../components/ui/alert";
 import { X, Upload } from "lucide-react";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import api from "@/config/axios";
-import { toast } from "@/hooks/use-toast";
-import { useAuthStore } from "@/store/authStore";
+import api from "../config/axios";
+import { toast } from "../hooks/use-toast";
+import { useAuthStore } from "../store/authStore";
 
 import DICOMDisplay from "./DICOMDisplay";
 import { IsDicom } from "./displayassets";

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
 import {
   Camera,
   Download,
@@ -9,18 +9,18 @@ import {
   Upload,
   Smartphone,
 } from "lucide-react";
-import { useAuthStore } from "@/store/authStore";
-import api from "@/config/axios";
-import { toast } from "@/hooks/use-toast";
+import { useAuthStore } from "../store/authStore";
+import api from "../config/axios";
+import { toast } from "../hooks/use-toast";
 import { Textarea } from "./ui/textarea";
 import { Input } from "./ui/input";
-import { Progress } from "@/components/ui/progress"; // Import progress bar
+import { Progress } from "../components/ui/progress"; // Import progress bar
 import {
   CAMERA_CONSTRAINTS,
   dataURLtoFile,
   getCameraError,
   parseTagString,
-} from "@/utils/cameraUtils";
+} from "../utils/cameraUtils";
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Label } from "./ui/label";
 

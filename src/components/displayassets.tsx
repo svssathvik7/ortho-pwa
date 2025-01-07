@@ -1,7 +1,7 @@
-import api from "@/config/axios";
-import { toast } from "@/hooks/use-toast";
-import { useAuthStore } from "@/store/authStore";
-import ImageResult from "@/types/assetResults";
+import api from "../config/axios";
+import { toast } from "../hooks/use-toast";
+import { useAuthStore } from "../store/authStore";
+import ImageResult from "../types/assetResults";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Badge } from "./ui/badge";
