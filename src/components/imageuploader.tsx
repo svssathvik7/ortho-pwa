@@ -10,15 +10,11 @@ import { Textarea } from "./ui/textarea";
 import api from "@/config/axios";
 import { toast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/store/authStore";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+
 import DICOMDisplay from "./DICOMDisplay";
 import { IsDicom } from "./displayassets";
+import { Label } from "./ui/label";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
 
 // Define constants for file validation
 const ACCEPTED_FILE_TYPES = {
@@ -37,32 +33,42 @@ interface FileWithPreview extends File {
 interface PatientDemographics {
   age: string;
   gender: string;
-  clinical_history: string;
-  notes: string;
+  name: string;
 }
 
 // Main FileUploader component
 const FileUploader = () => {
   // File states
   const [files, setFiles] = useState<FileWithPreview[]>([]);
+  const [notes,setNotes] = useState("");
+  const [clinical_history,setClinicalHistory] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     [key: string]: number;
   }>({});
   const [uploading, setUploading] = useState(false);
-
+  const [isNewUser, setIsNewUser] = useState(false);
+  const [patientId, setPatientId] = useState("");
+  const [isOpen, setIsOpen] = useState(false);  
   // Metadata states
   const [bodyPartTags, setBodyPartTags] = useState("");
   const [classificationSuggestions, setClassificationSuggestions] = useState([]);
   const [diagnosisTags, setDiagnosisTags] = useState("");
   const [classificationTags, setClassificationTags] = useState("");
   const [implantTags, setImplantTags] = useState("");
-  const [demographics, setDemographics] = useState<PatientDemographics>({
+  const [demographics, setDemographics] = useState({
+    name: "",
     age: "",
-    gender: "other",
-    clinical_history: "",
-    notes: ""
+    gender: "",
   });
+
+  const handleSavePatient = async (e: any) => {
+    e.preventDefault();
+    setIsNewUser(true);
+    setIsOpen(false);
+    setPatientId(email + demographics.name);
+    return;
+  };
 
   const [showSuggestions, setShowSuggestions] = useState(false);
 
@@ -95,12 +101,14 @@ const FileUploader = () => {
     setPatientName(suggestion.name);
     try {
       const response = (await api.get(`/api/patients/${email+suggestion.name}`)).data;
-      setPatientData({
-        age: response.patient.age,
-        gender: response.patient.gender,
-        name: response.patient.name,
+      setDemographics({
+        age: response?.patient?.age,
+        gender: response?.patient?.gender,
+        name: response?.patient?.name,
       });
-      console.log(response.data.patient);
+      setIsNewUser(false);
+      setPatientId(response?.patient?.id);
+      console.log(response);
     } catch (error) {
       console.log(error);
     }
@@ -188,13 +196,26 @@ const FileUploader = () => {
 
       // Add metadata to form data
       const metadata = {
-        bodyParts: parseTagString(bodyPartTags),
-        diagnoses: parseTagString(diagnosisTags),
-        classifications: parseTagString(classificationTags),
-        implants: parseTagString(implantTags),
-        patientDemographics: demographics,
-        owner: email,
+        patientId: patientId,
+        bodyParts: parseTagString(bodyPartTags).map((tag) => tag.toLowerCase()),
+        diagnoses: parseTagString(diagnosisTags).map((tag) =>
+          tag.toLowerCase()
+        ),
+        classifications: parseTagString(classificationTags).map((tag) =>
+          tag.toLowerCase()
+        ),
+        implants: parseTagString(implantTags).map((tag) => tag.toLowerCase()),
+        patientDemographics: {
+          name: demographics.name.toLowerCase(),
+          age: demographics.age,
+          gender: demographics.gender.toLowerCase()
+        },
+        owner: email ? email.toLowerCase() : "",
+        isNewUser: isNewUser,
+        notes,
+        clinical_history
       };
+      console.log(metadata);
 
       // Append metadata as JSON string
       formData.append("metadata", JSON.stringify(metadata));
@@ -485,6 +506,119 @@ const FileUploader = () => {
             placeholder="Enter patient name..."
             className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
           />
+          <Dialog open={isOpen}>
+            {showSuggestions &&
+              (patientSuggestions.length > 0 ? (
+                <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
+                  {patientSuggestions.map((suggestion: any, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSelectSuggestion(suggestion)}
+                      className="w-full cursor-pointer hover:bg-blue-100"
+                    >
+                      {suggestion.name}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <DialogTrigger className="w-full">
+                  <Button
+                    onClick={() => setIsOpen(true)}
+                    className="w-full px-2"
+                  >
+                    Add patient
+                  </Button>
+                </DialogTrigger>
+              ))}
+            <DialogContent>
+              <div className="flex justify-between items-center border-b pb-2 mb-4">
+                <DialogTitle>Create a Patient</DialogTitle>
+              </div>
+              <form onSubmit={handleSavePatient}>
+                <div className="mb-4">
+                  <label
+                    htmlFor="patientName"
+                    className="block text-sm font-medium"
+                  >
+                    Patient Name
+                  </label>
+                  <Input
+                    id="patientName"
+                    type="text"
+                    required
+                    className="w-full mt-1 p-2 border rounded-md"
+                    value={demographics.name}
+                    onChange={(e) =>
+                      setDemographics((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="mb-4">
+                  <Label
+                    htmlFor="patientAge"
+                    className="block text-sm font-medium"
+                  >
+                    Age
+                  </Label>
+                  <Input
+                    id="patientAge"
+                    type="number"
+                    required
+                    min={0}
+                    className="w-full mt-1 p-2 border rounded-md"
+                    value={demographics.age}
+                    onChange={(e) =>
+                      setDemographics((prev) => ({
+                        ...prev,
+                        age: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="mb-4">
+                  <Label
+                    htmlFor="patientGender"
+                    className="block text-sm font-medium"
+                  >
+                    Gender
+                  </Label>
+                  <select
+                    id="patientGender"
+                    required
+                    className="w-full mt-1 p-2 border rounded-md"
+                    value={demographics.gender}
+                    onChange={(e) =>
+                      setDemographics((prev) => ({
+                        ...prev,
+                        gender: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">Select</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <Button
+                  type="submit"
+                  className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                >
+                  Save
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {demographics.name != "" && (
+            <div className="w-full flex items-center justify-between px-2">
+              <p className="text-black">Age: {demographics?.age}</p>
+              <p className="text-black">Gender: {demographics?.gender}</p>
+            </div>
+          )}
           {showSuggestions && patientSuggestions.length > 0 && (
             <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
               {patientSuggestions.map((suggestion:any, index) => (
@@ -498,30 +632,16 @@ const FileUploader = () => {
               ))}
             </ul>
           )}
-          {patientData.name != "" && (
-            <div className="w-full flex items-center justify-between px-2">
-              <p className="text-black">Age: {patientData?.age}</p>
-              <p className="text-black">Gender: {patientData?.gender}</p>
-            </div>
-          )}
           <Input
-            value={demographics.clinical_history}
-            onChange={(e) =>
-              setDemographics((prev) => ({
-                ...prev,
-                clinical_history: e.target.value,
-              }))
-            }
+            value={clinical_history}
+            onChange={(e)=>setClinicalHistory(e.target.value)}
             placeholder="Clinical History"
           />
 
           {/* Notes */}
           <Textarea
-            value={demographics.notes}
-            onChange={(e) => setDemographics((prev) => ({
-              ...prev,
-              notes: e.target.value,
-            }))}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
             placeholder="Additional notes"
             className="h-24"
           />
