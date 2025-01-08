@@ -7,6 +7,7 @@ import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 const backendUrl = import.meta.env.VITE_BACKEND_URL;
 const SignupForm = () => {
+  const [loading,setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -16,7 +17,7 @@ const SignupForm = () => {
 
   const handleSubmit = async(e:any) => {
     e.preventDefault();
-    // Handle form submission logic here
+    setLoading(true);
     try {
       const response = (await axios.post(`${backendUrl}/api/auth/register`,formData)).data;
       toast(
@@ -37,6 +38,9 @@ const SignupForm = () => {
         }
       )
       return;
+    }
+    finally{
+      setLoading(false);
     }
   };
 
@@ -101,9 +105,15 @@ const SignupForm = () => {
               <Link to='/auth/login' className='px-4 mx-1'><Button className='px-2' type='button'>Login</Button></Link>
           </div>
 
-          <Button type="submit" className="w-full">
-            Sign Up
-          </Button>
+          {loading ? (
+            <Button type="button" className="w-full" disabled>
+              Loading...
+            </Button>
+          ) : (
+            <Button type="submit" className="w-full">
+              Sign In
+            </Button>
+          )}
         </form>
       </CardContent>
     </Card>

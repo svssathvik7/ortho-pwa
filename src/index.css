@@ -149,3 +149,8 @@ img{
   width: 100dvw;
   overflow-x: hidden;
 }
+
+*::selection{
+  background-color: #000;
+  color: #fff;
+}
