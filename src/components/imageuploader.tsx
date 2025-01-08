@@ -553,6 +553,16 @@ const FileUploader = () => {
                 />
               </div>
             </div>
+          </div>
+        )}
+        {formPage == 0 && (
+          <div className="flex gap-1 flex-col items-center justify-center w-full h-[35dvh]">
+            <Input
+              value={patientName}
+              onChange={(e) => setPatientName(e.target.value)}
+              placeholder="Enter patient name..."
+              className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+            />
             <Dialog open={isOpen}>
               {showSuggestions &&
                 (patientSuggestions.length > 0 ? (
@@ -679,16 +689,6 @@ const FileUploader = () => {
                 ))}
               </ul>
             )}
-          </div>
-        )}
-        {formPage == 0 && (
-          <div className="flex gap-1 flex-col items-center justify-center w-full h-[35dvh]">
-            <Input
-              value={patientName}
-              onChange={(e) => setPatientName(e.target.value)}
-              placeholder="Enter patient name..."
-              className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-            />
             <Input
               value={clinical_history}
               onChange={(e) => setClinicalHistory(e.target.value)}

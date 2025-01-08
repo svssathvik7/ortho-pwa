@@ -22,7 +22,7 @@ export default function AssetUploader() {
     <div className="mt-28 flex items-center justify-center">
       {isOnline ? (
         <Tabs defaultValue="camera" className="w-screen lg:w-3/4">
-          <TabsList className="flex justify-center">
+          <TabsList className="flex justify-center bg-opacity-30">
             <TabsTrigger className="w-full" value="camera">Camera Upload</TabsTrigger>
             <TabsTrigger className="w-full" value="file">File Upload</TabsTrigger>
           </TabsList>
