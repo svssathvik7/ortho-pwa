@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "../components/ui/button";
-import { Card, CardContent } from "../components/ui/card";
+import { Card, CardContent, CardFooter } from "../components/ui/card";
 import {
   Camera,
   Download,
@@ -106,8 +106,8 @@ const CameraCapture = () => {
     return;
   };
 
-  const [clinical_history,setClinicalHistory] = useState("");
-  const [notes,setNotes] = useState("");
+  const [clinical_history, setClinicalHistory] = useState("");
+  const [notes, setNotes] = useState("");
   const [isMobileDevice, _setIsMobileDevice] = useState(false);
   const [_hasPermissions, setHasPermissions] = useState<boolean | null>(null);
 
@@ -336,387 +336,395 @@ const CameraCapture = () => {
     }
   };
 
+  const [formPage, setFormPage] = useState(0);
+
   return (
-    <Card className="w-full lg:max-w-96 h-max-screen mx-auto overflow-y-scroll p-2">
-      <CardContent className="lg:p-6">
+    <Card className="w-full lg:max-w-[40dvw] h-max-screen mx-auto overflow-y-scroll p-2 flex items-center justify-center flex-wrap">
+      <CardContent className="lg:p-6 w-full">
         {/* Camera video or captured image */}
-        <div className="relative mb-4 aspect-video bg-gray-100 rounded-lg overflow-hidden">
-          {!mediaStream && !capturedImage && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
-              <Smartphone className="w-12 h-12 mb-2" />
-              <p>Camera is not active</p>
-              <p>Click "Start Camera" to begin</p>
-            </div>
-          )}
-          {mediaStream && !capturedImage && (
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          )}
-          <canvas ref={canvasRef} className="hidden" />
-          {capturedImage && (
-            <img
-              src={capturedImage}
-              alt="Captured"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-          )}
-        </div>
-
-        {/* Inputs and Tags */}
-        <div className="space-y-2 m-2">
-          <div className="space-y-2 w-full">
-            <div className="flex flex-wrap mb-2">
-              {bodyPartTags != "" &&
-                bodyPartTags
-                  .split(" ")
-                  .map(
-                    (tag) =>
-                      tag != "" && (
-                        <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
-                          {tag}
-                        </span>
-                      )
-                  )}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={bodyPartTags}
-                onChange={(e) => setBodyPartTags(e.target.value)}
-                placeholder="Enter body part..."
-                className="flex-1"
-              />
-            </div>
-          </div>
-          <div className="space-y-2 w-full">
-            <div className="flex flex-wrap mb-2">
-              {diagnosisTags != "" &&
-                diagnosisTags
-                  .split(" ")
-                  .map(
-                    (tag) =>
-                      tag != "" && (
-                        <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
-                          {tag}
-                        </span>
-                      )
-                  )}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={diagnosisTags}
-                onChange={(e) => setDiagnosisTags(e.target.value)}
-                placeholder="Enter diagnoses tags..."
-                className="flex-1"
-              />
-            </div>
-          </div>
-          <div className="space-y-2 w-full">
-            <div className="flex flex-wrap mb-2">
-              {classificationTags != "" &&
-                classificationTags
-                  .split(" ")
-                  .map(
-                    (tag) =>
-                      tag != "" && (
-                        <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
-                          {tag}
-                        </span>
-                      )
-                  )}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={classificationTags}
-                onChange={(e) => setClassificationTags(e.target.value)}
-                placeholder="Enter classification tags..."
-                className="flex-1"
-              />
-            </div>
-            {classificationSuggestions.length > 0 && (
-              <ul className="z-10 w-full mt-1 bg-white text-black border rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                {classificationSuggestions.map((suggestion: any, index) => (
-                  <li
-                    key={index}
-                    onClick={() => handleClassificationSuggestion(suggestion)}
-                    className="p-1 h-48 overflow-y-scroll cursor-pointer hover:bg-blue-50 transition-colors"
-                  >
-                    <img
-                      className="object-contain h-32"
-                      key={index}
-                      src={suggestion.url}
-                    />
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div className="space-y-2 w-full">
-            <div className="flex flex-wrap mb-2">
-              {implantTags != "" &&
-                implantTags
-                  .split(" ")
-                  .map(
-                    (tag) =>
-                      tag != "" && (
-                        <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
-                          {tag}
-                        </span>
-                      )
-                  )}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={implantTags}
-                onChange={(e) => setImplantTags(e.target.value)}
-                placeholder="Enter implant tags..."
-                className="flex-1"
-              />
-            </div>
-          </div>
-          {/* patient data */}
-          <Input
-            value={patientName}
-            onChange={(e) => setPatientName(e.target.value)}
-            placeholder="Enter patient name..."
-            className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-          />
-          <Dialog open={isOpen}>
-            {showSuggestions &&
-              (patientSuggestions.length > 0 ? (
-                <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
-                  {patientSuggestions.map((suggestion: any, index) => (
-                    <li
-                      key={index}
-                      onClick={() => handleSelectSuggestion(suggestion)}
-                      className="w-full cursor-pointer hover:bg-blue-100"
-                    >
-                      {suggestion.name}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <DialogTrigger className="w-full">
-                  <Button
-                    onClick={() => setIsOpen(true)}
-                    className="w-full px-2"
-                  >
-                    Add patient
-                  </Button>
-                </DialogTrigger>
-              ))}
-            <DialogContent>
-              <div className="flex justify-between items-center border-b pb-2 mb-4">
-                <DialogTitle>Create a Patient</DialogTitle>
+        {formPage == 0 && (
+          <div className="relative mb-4 h-[35dvh] aspect-video bg-gray-100 rounded-lg overflow-hidden">
+            {!mediaStream && !capturedImage && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
+                <Smartphone className="w-12 h-12 mb-2" />
+                <p>Camera is not active</p>
+                <p>Click "Start Camera" to begin</p>
               </div>
-              <form onSubmit={handleSavePatient}>
-                <div className="mb-4">
-                  <label
-                    htmlFor="patientName"
-                    className="block text-sm font-medium"
-                  >
-                    Patient Name
-                  </label>
-                  <Input
-                    id="patientName"
-                    type="text"
-                    required
-                    className="w-full mt-1 p-2 border rounded-md"
-                    value={demographics.name}
-                    onChange={(e) =>
-                      setDemographics((prev) => ({
-                        ...prev,
-                        name: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="mb-4">
-                  <Label
-                    htmlFor="patientAge"
-                    className="block text-sm font-medium"
-                  >
-                    Age
-                  </Label>
-                  <Input
-                    id="patientAge"
-                    type="number"
-                    required
-                    min={0}
-                    className="w-full mt-1 p-2 border rounded-md"
-                    value={demographics.age}
-                    onChange={(e) =>
-                      setDemographics((prev) => ({
-                        ...prev,
-                        age: e.target.value,
-                      }))
-                    }
-                  />
-                </div>
-                <div className="mb-4">
-                  <Label
-                    htmlFor="patientGender"
-                    className="block text-sm font-medium"
-                  >
-                    Gender
-                  </Label>
-                  <select
-                    id="patientGender"
-                    required
-                    className="w-full mt-1 p-2 border rounded-md"
-                    value={demographics.gender}
-                    onChange={(e) =>
-                      setDemographics((prev) => ({
-                        ...prev,
-                        gender: e.target.value,
-                      }))
-                    }
-                  >
-                    <option value="">Select</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <Button
-                  type="submit"
-                  className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
-                >
-                  Save
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+            )}
+            {mediaStream && !capturedImage && (
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+            <canvas ref={canvasRef} className="hidden" />
+            {capturedImage && (
+              <img
+                src={capturedImage}
+                alt="Captured"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+            {/* Progress bar for upload */}
+            {isUploading && (
+              <div className="mt-4">
+                <Progress
+                  className="opacity-50"
+                  value={uploadProgress}
+                  max={100}
+                />
+                <p className="text-xs text-black mt-1">{uploadProgress}%</p>
+              </div>
+            )}
 
-          {patientData.name != "" && (
-            <div className="w-full flex items-center justify-between px-2">
-              <p className="text-black">Age: {patientData?.age}</p>
-              <p className="text-black">Gender: {patientData?.gender}</p>
+            {/* Control buttons */}
+            <div className="flex justify-center gap-3 items-center absolute bottom-0 mx-auto left-0 right-0 m-1">
+              {capturedImage ? (
+                <>
+                  <Button
+                    onClick={saveImage}
+                    variant="default"
+                    className="gap-2 px-2"
+                    disabled={isUploading}
+                  >
+                    <Download className="w-4 h-4" />
+                    Save
+                  </Button>
+                  <Button
+                    onClick={uploadImage}
+                    variant="default"
+                    className="gap-2 px-2"
+                    disabled={isUploading}
+                  >
+                    <Upload className="w-4 h-4" />
+                    {isUploading ? "Uploading..." : "Upload"}
+                  </Button>
+                  <Button
+                    onClick={resetImage}
+                    variant="destructive"
+                    className="gap-2 px-2"
+                    disabled={isUploading}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Reset
+                  </Button>
+                </>
+              ) : (
+                <>
+                  {!mediaStream ? (
+                    <Button
+                      onClick={startWebcam}
+                      variant="default"
+                      className="gap-2 px-2"
+                    >
+                      <Camera className="w-4 h-4" />
+                      Start Camera
+                    </Button>
+                  ) : (
+                    <>
+                      <Button
+                        onClick={captureImage}
+                        variant="secondary"
+                        className="gap-2 px-2"
+                      >
+                        <Camera className="w-4 h-4" />
+                        Capture
+                      </Button>
+                      <Button
+                        onClick={stopWebcam}
+                        variant="destructive"
+                        className="gap-2 px-2"
+                      >
+                        <Square className="w-4 h-4" />
+                        Stop
+                      </Button>
+                    </>
+                  )}
+                </>
+              )}
             </div>
-          )}
-          {/* Patient Demographics */}
-          {/* <div className="grid grid-cols-2 gap-2">
-            <Input
-              value={demographics.age}
-              onChange={(e) =>
-                setDemographics((prev) => ({ ...prev, age: e.target.value }))
-              }
-              placeholder="Age"
-              required
-            />
-            <Select
-              value={demographics.gender}
-              onValueChange={(value) =>
-                setDemographics((prev) => ({ ...prev, gender: value }))
-              }
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select gender" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="male">Male</SelectItem>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div> */}
-          <Input
-            value={clinical_history}
-            onChange={(e)=>setClinicalHistory(e.target.value)}
-            placeholder="Clinical History"
-          />
-
-          {/* Notes */}
-          <Textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Additional notes"
-            className="h-24"
-          />
-        </div>
-
-        {/* Progress bar for upload */}
-        {isUploading && (
-          <div className="mt-4">
-            <Progress className="opacity-50" value={uploadProgress} max={100} />
-            <p className="text-xs text-black mt-1">{uploadProgress}%</p>
           </div>
         )}
 
-        {/* Control buttons */}
-        <div className="flex justify-center gap-3">
-          {capturedImage ? (
-            <>
-              <Button
-                onClick={saveImage}
-                variant="default"
-                className="gap-2 px-2"
-                disabled={isUploading}
-              >
-                <Download className="w-4 h-4" />
-                Save
-              </Button>
-              <Button
-                onClick={uploadImage}
-                variant="default"
-                className="gap-2 px-2"
-                disabled={isUploading}
-              >
-                <Upload className="w-4 h-4" />
-                {isUploading ? "Uploading..." : "Upload"}
-              </Button>
-              <Button
-                onClick={resetImage}
-                variant="destructive"
-                className="gap-2 px-2"
-                disabled={isUploading}
-              >
-                <RefreshCw className="w-4 h-4" />
-                Reset
-              </Button>
-            </>
-          ) : (
-            <>
-              {!mediaStream ? (
-                <Button
-                  onClick={startWebcam}
-                  variant="default"
-                  className="gap-2 px-2"
-                >
-                  <Camera className="w-4 h-4" />
-                  Start Camera
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    onClick={captureImage}
-                    variant="secondary"
-                    className="gap-2 px-2"
-                  >
-                    <Camera className="w-4 h-4" />
-                    Capture
-                  </Button>
-                  <Button
-                    onClick={stopWebcam}
-                    variant="destructive"
-                    className="gap-2 px-2"
-                  >
-                    <Square className="w-4 h-4" />
-                    Stop
-                  </Button>
-                </>
+        {/* Inputs and Tags */}
+        {formPage == 1 && (
+          <div className="space-y-2 m-2 w-full">
+            <div className="space-y-2 w-full">
+              <div className="flex flex-wrap mb-2 w-full">
+                {bodyPartTags != "" &&
+                  bodyPartTags
+                    .split(" ")
+                    .map(
+                      (tag) =>
+                        tag != "" && (
+                          <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                            {tag}
+                          </span>
+                        )
+                    )}
+              </div>
+              <div className="flex gap-2 w-full">
+                <Input
+                  type="text"
+                  value={bodyPartTags}
+                  onChange={(e) => setBodyPartTags(e.target.value)}
+                  placeholder="Enter body part..."
+                  className="flex-1 w-full"
+                />
+              </div>
+            </div>
+            <div className="space-y-2 w-full">
+              <div className="flex flex-wrap mb-2">
+                {diagnosisTags != "" &&
+                  diagnosisTags
+                    .split(" ")
+                    .map(
+                      (tag) =>
+                        tag != "" && (
+                          <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                            {tag}
+                          </span>
+                        )
+                    )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={diagnosisTags}
+                  onChange={(e) => setDiagnosisTags(e.target.value)}
+                  placeholder="Enter diagnoses tags..."
+                  className="flex-1"
+                />
+              </div>
+            </div>
+            <div className="space-y-2 w-full">
+              <div className="flex flex-wrap mb-2">
+                {classificationTags != "" &&
+                  classificationTags
+                    .split(" ")
+                    .map(
+                      (tag) =>
+                        tag != "" && (
+                          <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                            {tag}
+                          </span>
+                        )
+                    )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={classificationTags}
+                  onChange={(e) => setClassificationTags(e.target.value)}
+                  placeholder="Enter classification tags..."
+                  className="flex-1"
+                />
+              </div>
+              {classificationSuggestions.length > 0 && (
+                <ul className="z-10 w-full mt-1 bg-white text-black border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {classificationSuggestions.map((suggestion: any, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleClassificationSuggestion(suggestion)}
+                      className="p-1 h-48 overflow-y-scroll cursor-pointer hover:bg-blue-50 transition-colors"
+                    >
+                      <img
+                        className="object-contain h-32"
+                        key={index}
+                        src={suggestion.url}
+                      />
+                    </li>
+                  ))}
+                </ul>
               )}
-            </>
-          )}
-        </div>
+            </div>
+            <div className="space-y-2 w-full">
+              <div className="flex flex-wrap mb-2">
+                {implantTags != "" &&
+                  implantTags
+                    .split(" ")
+                    .map(
+                      (tag) =>
+                        tag != "" && (
+                          <span className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                            {tag}
+                          </span>
+                        )
+                    )}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  value={implantTags}
+                  onChange={(e) => setImplantTags(e.target.value)}
+                  placeholder="Enter implant tags..."
+                  className="flex-1"
+                />
+              </div>
+            </div>
+            {/* patient data */}
+          </div>
+        )}
+        {formPage == 2 && (
+          <div className="flex gap-1 flex-col items-center justify-center">
+            <Input
+              value={patientName}
+              onChange={(e) => setPatientName(e.target.value)}
+              placeholder="Enter patient name..."
+              className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+            />
+            <Dialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
+              {showSuggestions &&
+                (patientSuggestions.length > 0 ? (
+                  <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
+                    {patientSuggestions.map((suggestion: any, index) => (
+                      <li
+                        key={index}
+                        onClick={() => handleSelectSuggestion(suggestion)}
+                        className="w-full cursor-pointer hover:bg-blue-100"
+                      >
+                        {suggestion.name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <DialogTrigger className="w-full">
+                    <Button
+                      onClick={() => setIsOpen(true)}
+                      className="w-full px-2"
+                    >
+                      Add patient
+                    </Button>
+                  </DialogTrigger>
+                ))}
+              <DialogContent>
+                <div className="flex justify-between items-center border-b pb-2 mb-4">
+                  <DialogTitle>Create a Patient</DialogTitle>
+                  {/* <button
+                    onClick={() => setIsOpen(false)} // Close dialog
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </button> */}
+                </div>
+                <form onSubmit={handleSavePatient}>
+                  <div className="mb-4">
+                    <label
+                      htmlFor="patientName"
+                      className="block text-sm font-medium"
+                    >
+                      Patient Name
+                    </label>
+                    <Input
+                      id="patientName"
+                      type="text"
+                      required
+                      className="w-full mt-1 p-2 border rounded-md"
+                      value={demographics.name}
+                      onChange={(e) =>
+                        setDemographics((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <Label
+                      htmlFor="patientAge"
+                      className="block text-sm font-medium"
+                    >
+                      Age
+                    </Label>
+                    <Input
+                      id="patientAge"
+                      type="number"
+                      required
+                      min={0}
+                      className="w-full mt-1 p-2 border rounded-md"
+                      value={demographics.age}
+                      onChange={(e) =>
+                        setDemographics((prev) => ({
+                          ...prev,
+                          age: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <Label
+                      htmlFor="patientGender"
+                      className="block text-sm font-medium"
+                    >
+                      Gender
+                    </Label>
+                    <select
+                      id="patientGender"
+                      required
+                      className="w-full mt-1 p-2 border rounded-md"
+                      value={demographics.gender}
+                      onChange={(e) =>
+                        setDemographics((prev) => ({
+                          ...prev,
+                          gender: e.target.value,
+                        }))
+                      }
+                    >
+                      <option value="">Select</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
+                  >
+                    Save
+                  </Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {patientData.name != "" && (
+              <div className="w-full flex items-center justify-between px-2">
+                <p className="text-black">Age: {patientData?.age}</p>
+                <p className="text-black">Gender: {patientData?.gender}</p>
+              </div>
+            )}
+            <Input
+              value={clinical_history}
+              onChange={(e) => setClinicalHistory(e.target.value)}
+              placeholder="Clinical History"
+            />
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Additional notes"
+              className="h-24"
+              rows={5}
+            />
+          </div>
+        )}
+        <CardFooter className="w-full flex items-center justify-between m-2">
+          <Button
+            disabled={formPage == 0}
+            className="px-2"
+            onClick={() => setFormPage(formPage - 1)}
+          >
+            Prev
+          </Button>
+          <Button
+            disabled={formPage == 2}
+            className="px-2"
+            onClick={() => setFormPage(formPage + 1)}
+          >
+            Next
+          </Button>
+        </CardFooter>
       </CardContent>
     </Card>
   );
