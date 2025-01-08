@@ -339,7 +339,7 @@ const CameraCapture = () => {
   const [formPage, setFormPage] = useState(0);
 
   return (
-    <Card className="w-full lg:max-w-[40dvw] h-max-screen mx-auto overflow-y-scroll p-2 flex items-center justify-center flex-wrap">
+    <Card className="w-full lg:max-w-[40dvw] max-w-96 h-max-screen mx-auto overflow-y-scroll p-2 flex items-center justify-center flex-wrap">
       <CardContent className="lg:p-6 w-full flex items-center justify-center flex-col">
         {/* Camera video or captured image */}
         {formPage == 2 && (
@@ -704,7 +704,7 @@ const CameraCapture = () => {
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Additional notes"
               className="h-fit"
-              rows={8}
+              rows={7}
             />
           </div>
         )}
