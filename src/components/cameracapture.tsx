@@ -340,9 +340,9 @@ const CameraCapture = () => {
 
   return (
     <Card className="w-full lg:max-w-[40dvw] h-max-screen mx-auto overflow-y-scroll p-2 flex items-center justify-center flex-wrap">
-      <CardContent className="lg:p-6 w-full">
+      <CardContent className="lg:p-6 w-full flex items-center justify-center flex-col">
         {/* Camera video or captured image */}
-        {formPage == 0 && (
+        {formPage == 2 && (
           <div className="relative mb-4 h-[35dvh] aspect-video bg-gray-100 rounded-lg overflow-hidden">
             {!mediaStream && !capturedImage && (
               <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
@@ -418,10 +418,9 @@ const CameraCapture = () => {
                     <Button
                       onClick={startWebcam}
                       variant="default"
-                      className="gap-2 px-2"
+                      className="gap-2 rounded-full w-10 h-10"
                     >
-                      <Camera className="w-4 h-4" />
-                      Start Camera
+                      <Camera className="w-8 h-8" />
                     </Button>
                   ) : (
                     <>
@@ -451,7 +450,7 @@ const CameraCapture = () => {
 
         {/* Inputs and Tags */}
         {formPage == 1 && (
-          <div className="space-y-2 m-2 w-full">
+          <div className="space-y-2 m-2 w-full h-[35dvh]">
             <div className="space-y-2 w-full">
               <div className="flex flex-wrap mb-2 w-full">
                 {bodyPartTags != "" &&
@@ -568,8 +567,8 @@ const CameraCapture = () => {
             {/* patient data */}
           </div>
         )}
-        {formPage == 2 && (
-          <div className="flex gap-1 flex-col items-center justify-center">
+        {formPage == 0 && (
+          <div className="flex gap-1 flex-col items-center justify-center w-full h-[35dvh]">
             <Input
               value={patientName}
               onChange={(e) => setPatientName(e.target.value)}
@@ -704,8 +703,8 @@ const CameraCapture = () => {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Additional notes"
-              className="h-24"
-              rows={5}
+              className="h-fit"
+              rows={8}
             />
           </div>
         )}
