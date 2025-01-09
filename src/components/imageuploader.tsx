@@ -70,17 +70,11 @@ const FileUploader = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [patientName, setPatientName] = useState("");
-  const [_patientData, setPatientData] = useState({
-    name: "",
-    age: "",
-    gender: "",
-  });
   const [patientSuggestions, setPatientSuggestions] = useState([]);
   const [formPage, setFormPage] = useState(0);
 
   useEffect(() => {
     if (patientName) {
-      setPatientData({ name: "", age: "", gender: "" });
       const fetchSuggestions = async () => {
         const response = await api.get(
           `/api/patients/suggestions/${email + patientName}`
@@ -674,6 +668,7 @@ const FileUploader = () => {
 
             {demographics.name != "" && (
               <div className="w-full flex items-center justify-between px-2">
+                <p className="text-black">Name: {demographics?.name}</p>
                 <p className="text-black">Age: {demographics?.age}</p>
                 <p className="text-black">Gender: {demographics?.gender}</p>
               </div>
