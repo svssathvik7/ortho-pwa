@@ -18,6 +18,7 @@ import {
   DoorOpen,
   DoorClosed,
   User2,
+  DoorClosedIcon,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -28,9 +29,10 @@ export default function Navbar() {
   const logout = useAuthStore((state) => state.logout);
   const [isMobile, setIsMobile] = useState(false);
   const dp = useAuthStore((state) => state.dp); // Get dp directly from the store
-
+  const [isLoggingOut,setIsLoggingOut] = useState(false);
   const handleLogout = async () => {
     try {
+      setIsLoggingOut(true);
       await axios.post(`${backendUrl}/api/auth/logout`);
       logout();
       toast({
@@ -41,9 +43,12 @@ export default function Navbar() {
       console.error("Logout failed:", error);
       toast({
         title: "Failed to log out!",
-      });
+      })
       return;
     }
+    finally{
+      setIsLoggingOut(false);
+    };
   };
 
   useEffect(() => {
@@ -84,7 +89,7 @@ export default function Navbar() {
                 className="px-4 py-2 text-center hover:bg-gray-100 rounded-md transition-colors text-red-600 flex items-center space-x-2 justify-start"
               >
                 <DoorOpen className="w-5 h-5" />
-                <p>logout</p>
+                <span>{!isLoggingOut ? "logout" : "logging out..."}</span>
               </button>
             ) : (
               <Link
@@ -92,7 +97,7 @@ export default function Navbar() {
                 className="px-4 py-2 hover:bg-gray-100 rounded-md transition-colors flex items-center space-x-2 justify-start"
               >
                 <DoorClosed className="w-5 h-5" />
-                <p>login</p>
+                <span>login</span>
               </Link>
             )}
           </div>
@@ -125,15 +130,15 @@ export default function Navbar() {
                 onClick={handleLogout}
                 className="px-2 text-center hover:bg-gray-100 rounded-md transition-colors text-red-600 flex items-center justify-start gap-1"
               >
-                <DoorOpen size={15} className="text-red" />
-                <span>logout</span>
+                <DoorOpen scale={10} className="text-red" />
+                <span>{!isLoggingOut ? "logout" : "logging out..."}</span>
               </button>
             ) : (
               <Link
                 to="/auth/login"
                 className="px-2 text-center hover:bg-gray-100 rounded-md transition-colors flex items-center justify-start gap-1"
               >
-                <DoorClosed size={15} className="text-black" />
+                <DoorClosedIcon size={20} className="text-black" />
                 <span>login</span>
               </Link>
             )}
