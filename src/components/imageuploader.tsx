@@ -313,10 +313,10 @@ const FileUploader = () => {
   };
 
   return (
-    <Card className="w-full lg:max-w-[40dvw] max-w-96 h-max-screen mx-auto overflow-y-scroll p-2">
-      <CardContent className="space-y-4 lg:max-w-[40dvw]">
+    <Card className="w-full lg:max-w-[40dvw] max-w-96 h-max-screen mx-auto overflow-y-scroll p-2 flex flex-col items-center justify-start">
+      <CardContent className="space-y-4 w-full max-h-screen h-fit m-2">
         {formPage == 2 && (
-          <div className="flex flex-col items-center justify-start gap-2 h-[40dvh]">
+          <div className="flex flex-col items-center justify-start gap-2 h-fit max-h-screen">
             <div
               {...getRootProps()}
               className={`
@@ -435,7 +435,7 @@ const FileUploader = () => {
 
         {/* Tags and Metadata Inputs */}
         {formPage == 1 && (
-          <div className="space-y-2 h-[35dvh]">
+          <div className="space-y-2 h-[35dvh] w-full">
             <div className="space-y-2 w-full">
               <div className="flex flex-wrap mb-2">
                 {bodyPartTags != "" &&
@@ -552,12 +552,12 @@ const FileUploader = () => {
           </div>
         )}
         {formPage == 0 && (
-          <div className="flex gap-1 flex-col items-center justify-center w-full h-[35dvh]">
+          <div className="w-full flex gap-1 flex-col items-center justify-center h-[35dvh]">
             {showPatientInput && <Input
               value={patientName}
               onChange={(e) => setPatientName(e.target.value)}
               placeholder="Enter patient name..."
-              className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
+              className="w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
             />}
             <Dialog open={isOpen}>
               {showSuggestions &&
@@ -687,7 +687,6 @@ const FileUploader = () => {
           </div>
         )}
       </CardContent>
-
       <CardFooter className="w-full flex items-center justify-between m-2 p-2">
         <Button
           disabled={formPage == 0}
