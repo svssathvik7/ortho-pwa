@@ -33,6 +33,7 @@ const CameraCapture = () => {
     age: "",
     gender: "",
   });
+  const [showPatientInput,setShowPatientInput] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
   const [patientId, setPatientId] = useState("");
   const [patientSuggestions, setPatientSuggestions] = useState([]);
@@ -80,6 +81,7 @@ const CameraCapture = () => {
 
   const handleSelectSuggestion = async (suggestion: any) => {
     console.log(suggestion);
+    setShowPatientInput(false);
     setPatientName(suggestion.name);
     try {
       const response = (
@@ -572,24 +574,24 @@ const CameraCapture = () => {
         )}
         {formPage == 0 && (
           <div className="flex gap-1 flex-col items-center justify-center w-full h-[35dvh]">
-            <Input
+            {showPatientInput && <Input
               value={patientName}
-              onChange={(e) => setPatientName(e.target.value)}
+              onChange={(e) => {setPatientName(e.target.value); if(patientName===""){setShowPatientInput(true);}}}
               placeholder="Enter patient name..."
               className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-            />
+            />}
             <Dialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
               {showSuggestions &&
                 (patientSuggestions.length > 0 ? (
                   <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg w-full">
                     {patientSuggestions.map((suggestion: any, index) => (
-                      <li
+                      <p
                         key={index}
                         onClick={() => handleSelectSuggestion(suggestion)}
-                        className="w-full cursor-pointer hover:bg-blue-100"
+                        className="cursor-pointer text-left p-1"
                       >
                         {suggestion.name}
-                      </li>
+                      </p>
                     ))}
                   </ul>
                 ) : (
@@ -605,12 +607,6 @@ const CameraCapture = () => {
               <DialogContent>
                 <div className="flex justify-between items-center border-b pb-2 mb-4">
                   <DialogTitle>Create a Patient</DialogTitle>
-                  {/* <button
-                    onClick={() => setIsOpen(false)} // Close dialog
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    ✕
-                  </button> */}
                 </div>
                 <form onSubmit={handleSavePatient}>
                   <div className="mb-4">
@@ -693,6 +689,7 @@ const CameraCapture = () => {
 
             {demographics.name != "" && (
               <div className="w-full flex items-center justify-between px-2">
+                <p className="text-black">Name: {demographics?.name}</p>
                 <p className="text-black">Age: {demographics?.age}</p>
                 <p className="text-black">Gender: {demographics?.gender}</p>
               </div>
