@@ -28,11 +28,6 @@ const CameraCapture = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [patientName, setPatientName] = useState("");
-  const [patientData, setPatientData] = useState({
-    name: "",
-    age: "",
-    gender: "",
-  });
   const [showPatientInput,setShowPatientInput] = useState(true);
   const [isNewUser, setIsNewUser] = useState(false);
   const [patientId, setPatientId] = useState("");
@@ -59,7 +54,6 @@ const CameraCapture = () => {
   const email = useAuthStore((state) => state.email);
   useEffect(() => {
     if (patientName) {
-      setPatientData({ name: "", age: "", gender: "" });
       const fetchSuggestions = async () => {
         const response = await api.get(
           `/api/patients/suggestions/${email + patientName}`
