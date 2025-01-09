@@ -528,7 +528,7 @@ const CameraCapture = () => {
                 />
               </div>
               {classificationSuggestions.length > 0 && (
-                <ul className="absolute z-10 w-fit min-w-[20dvw] mt-1 bg-white text-black border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                <ul className="z-50 relative w-full mt-1 bg-white text-black border rounded-lg shadow-lg max-h-40 overflow-y-auto">
                   {classificationSuggestions.map((suggestion: any, index) => (
                     <li
                       key={index}

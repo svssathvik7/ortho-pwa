@@ -49,6 +49,7 @@ const FileUploader = () => {
   const [classificationSuggestions, setClassificationSuggestions] = useState(
     []
   );
+  const [showPatientInput, setShowPatientInput] = useState(true);
   const [diagnosisTags, setDiagnosisTags] = useState("");
   const [classificationTags, setClassificationTags] = useState("");
   const [implantTags, setImplantTags] = useState("");
@@ -100,6 +101,7 @@ const FileUploader = () => {
       const response = (
         await api.get(`/api/patients/${email + suggestion.name}`)
       ).data;
+      setShowPatientInput(false);
       setDemographics({
         age: response?.patient?.age,
         gender: response?.patient?.gender,
@@ -512,12 +514,12 @@ const FileUploader = () => {
                 />
               </div>
               {classificationSuggestions.length > 0 && (
-                <ul className="z-10 w-full mt-1 bg-white text-black border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                <ul className="z-50 relative w-full mt-1 bg-white text-black border rounded-lg shadow-lg max-h-40 overflow-y-auto">
                   {classificationSuggestions.map((suggestion: any, index) => (
                     <li
                       key={index}
                       onClick={() => handleClassificationSuggestion(suggestion)}
-                      className="p-1 h-48 overflow-y-scroll cursor-pointer hover:bg-blue-50 transition-colors"
+                      className="p-1 z-50 h-48 overflow-y-scroll cursor-pointer hover:bg-blue-50 transition-colors"
                     >
                       <img
                         className="object-contain h-32"
@@ -557,24 +559,24 @@ const FileUploader = () => {
         )}
         {formPage == 0 && (
           <div className="flex gap-1 flex-col items-center justify-center w-full h-[35dvh]">
-            <Input
+            {showPatientInput && <Input
               value={patientName}
               onChange={(e) => setPatientName(e.target.value)}
               placeholder="Enter patient name..."
               className="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring focus:border-blue-300"
-            />
+            />}
             <Dialog open={isOpen}>
               {showSuggestions &&
                 (patientSuggestions.length > 0 ? (
-                  <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
+                  <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg w-full">
                     {patientSuggestions.map((suggestion: any, index) => (
-                      <li
+                      <p
                         key={index}
                         onClick={() => handleSelectSuggestion(suggestion)}
-                        className="w-full cursor-pointer hover:bg-blue-100"
+                        className="cursor-pointer text-left p-1"
                       >
                         {suggestion.name}
-                      </li>
+                      </p>
                     ))}
                   </ul>
                 ) : (
@@ -675,19 +677,6 @@ const FileUploader = () => {
                 <p className="text-black">Age: {demographics?.age}</p>
                 <p className="text-black">Gender: {demographics?.gender}</p>
               </div>
-            )}
-            {showSuggestions && patientSuggestions.length > 0 && (
-              <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
-                {patientSuggestions.map((suggestion: any, index) => (
-                  <li
-                    key={index}
-                    onClick={() => handleSelectSuggestion(suggestion)}
-                    className="w-full cursor-pointer hover:bg-blue-100"
-                  >
-                    {suggestion.name}
-                  </li>
-                ))}
-              </ul>
             )}
             <Input
               value={clinical_history}
