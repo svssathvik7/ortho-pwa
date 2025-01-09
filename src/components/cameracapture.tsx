@@ -79,16 +79,19 @@ const CameraCapture = () => {
   }, [patientName]);
 
   const handleSelectSuggestion = async (suggestion: any) => {
+    console.log(suggestion);
     setPatientName(suggestion.name);
     try {
       const response = (
         await api.get(`/api/patients/${email + suggestion.name}`)
       ).data;
-      setPatientData({
+      setPatientSuggestions([]);
+      setDemographics({
         age: response.patient.age,
         gender: response.patient.gender,
         name: response.patient.name,
       });
+      setPatientId(email + response.patient.name);
       setIsNewUser(false);
       console.log(response.data.patient);
     } catch (error) {
@@ -303,7 +306,7 @@ const CameraCapture = () => {
       };
 
       formData.append("metadata", JSON.stringify(metaData));
-
+      console.log(formData.get("metadata"));
       // Upload request with progress tracking
       await api.post("/api/assets/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -578,7 +581,7 @@ const CameraCapture = () => {
             <Dialog open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
               {showSuggestions &&
                 (patientSuggestions.length > 0 ? (
-                  <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg">
+                  <ul className="z-10 mt-1 bg-white border rounded-lg shadow-lg w-full">
                     {patientSuggestions.map((suggestion: any, index) => (
                       <li
                         key={index}
@@ -688,10 +691,10 @@ const CameraCapture = () => {
               </DialogContent>
             </Dialog>
 
-            {patientData.name != "" && (
+            {demographics.name != "" && (
               <div className="w-full flex items-center justify-between px-2">
-                <p className="text-black">Age: {patientData?.age}</p>
-                <p className="text-black">Gender: {patientData?.gender}</p>
+                <p className="text-black">Age: {demographics?.age}</p>
+                <p className="text-black">Gender: {demographics?.gender}</p>
               </div>
             )}
             <Input
