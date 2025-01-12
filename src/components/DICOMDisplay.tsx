@@ -323,19 +323,19 @@ export default function DICOMViewer({
 
   if (error) {
     return (
-      <Card className="p-4 bg-red-50">
+      <div className="p-4 bg-red-50">
         <div className="text-red-500">
           {error}
           <div className="text-sm mt-2">
             Please check the browser console for detailed error information.
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card className={`p-4 ${className}`}>
+    <div className={`p-4 ${className}`}>
       <div className="relative">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">
@@ -371,6 +371,6 @@ export default function DICOMViewer({
             </div>
           )} */}
         </div>
-    </Card>
+    </div>
   );
 }
