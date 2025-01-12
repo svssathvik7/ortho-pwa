@@ -21,6 +21,7 @@ const AssetGrid = () => {
   const [images, setImages] = useState<ImageResult[]>([]);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
+  const [loading,setLoading] = useState(false);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -37,6 +38,7 @@ const AssetGrid = () => {
 
   useEffect(() => {
     const fetchImages = async () => {
+      setLoading(true);
       try {
         const response = await api.get(`/api/assets/get-user-assets/${email}`);
         setImages(response.data.data.images);
@@ -46,6 +48,9 @@ const AssetGrid = () => {
           title: error.response?.data || "An error occurred",
           variant: "destructive",
         });
+      }
+      finally{
+        setLoading(false);
       }
     };
     fetchImages();
@@ -59,10 +64,8 @@ const AssetGrid = () => {
         </div>
       )}
       <div className="flex-grow w-full flex justify-center flex-wrap gap-1 overflow-y-scroll">
-        {images.length === 0 ? (
-          <p className="text-center w-full">No assets to see!</p>
-        ) : (
-          images.map((image) => (
+
+          {loading ? <p> Loading assets...</p> : images.length === 0 ? <p>No assets to see!</p> : images.map((image) => (
             <div
               key={image._id}
               className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative p-2 w-full lg:w-72"
@@ -188,8 +191,7 @@ const AssetGrid = () => {
                 </HoverCard>
               </div>
             </div>
-          ))
-        )}
+          ))}
       </div>
 
       {/* Dialog for Selected Image */}
