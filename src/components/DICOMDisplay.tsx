@@ -334,7 +334,7 @@ export default function DICOMViewer({
   }
 
   return (
-    <div className={`p-4 ${className}`}>
+    <div className={`${className}`}>
       <div className="relative">
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75">

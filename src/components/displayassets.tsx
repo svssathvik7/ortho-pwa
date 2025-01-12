@@ -289,7 +289,6 @@ const AssetGrid = () => {
                         email !== image?.owner ? "hidden" : "flex"
                       } items-center gap-2 px-2`}
                       onClick={() => {
-                        setSelectedImage(image);
                         setSharingImageId(image._id);
                       }}
                       disabled={email !== image?.owner}
