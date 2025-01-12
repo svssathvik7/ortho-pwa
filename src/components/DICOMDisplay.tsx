@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { Card } from '../components/ui/card';
 import dicomParser from 'dicom-parser';
 // Define types for our DICOM image data
 interface DicomImageProps {
