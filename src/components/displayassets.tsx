@@ -97,6 +97,37 @@ const AssetGrid = () => {
     }
   };
 
+  const handleRevokeAccess = async () => {
+    if (!sharingEmail.trim() || !sharingImageId) return;
+
+    try {
+      await api.post(`/api/assets/${sharingImageId}/revoke`, {
+        email: sharingEmail.trim(),
+      });
+
+      setImages((prevImages) =>
+        prevImages.map((img) =>
+          img._id === sharingImageId
+            ? {
+                ...img,
+                sharedWith: (img.sharedWith || []).filter(
+                  (email) => email !== sharingEmail.trim()
+                ),
+              }
+            : img
+        )
+      );
+
+      setSharingEmail("");
+      toast({ title: "Access revoked successfully" });
+    } catch (error) {
+      toast({
+        title: "Failed to revoke access",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="mt-28 px-4">
       {!isOnline && (
@@ -238,7 +269,11 @@ const AssetGrid = () => {
                   </HoverCardContent>
                 </HoverCard>
               </div>
-
+              {email != image.owner && (
+                <p className="text-xs text-slate-500">
+                  Asset shared by {image.owner}
+                </p>
+              )}
               <div className="flex justify-end gap-2 mt-4">
                 <Dialog
                   open={sharingImageId === image._id}
@@ -251,14 +286,13 @@ const AssetGrid = () => {
                       variant="secondary"
                       size="sm"
                       className={`${
-                        email != image?.owner ? " hidden " : " flex "
+                        email !== image?.owner ? "hidden" : "flex"
                       } items-center gap-2 px-2`}
-                      onClick={(e) => {
-                        e.stopPropagation();
+                      onClick={() => {
                         setSelectedImage(image);
-                        setSharingImageId(image._id); // Set the image ID when share button is clicked
+                        setSharingImageId(image._id);
                       }}
-                      disabled={email != image?.owner}
+                      disabled={email !== image?.owner}
                     >
                       <Share2 className="w-4 h-4" />
                       Share
@@ -266,26 +300,53 @@ const AssetGrid = () => {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Share Access</DialogTitle>
+                      <DialogTitle>Manage Access</DialogTitle>
                     </DialogHeader>
-                    <div className="flex gap-2">
-                      <Input
-                        type="email"
-                        value={sharingEmail}
-                        onChange={(e) => setSharingEmail(e.target.value)}
-                        placeholder="Enter email"
-                        onKeyPress={(e) =>
-                          e.key === "Enter" && handleShareAccess()
-                        }
-                      />
-                      <Button onClick={handleShareAccess} className="px-2">
-                        Share
-                      </Button>
-                    </div>
+                    <Tabs defaultValue="share">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="share">Share Access</TabsTrigger>
+                        <TabsTrigger value="revoke">Revoke Access</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="share">
+                        <div className="flex gap-2">
+                          <Input
+                            type="email"
+                            value={sharingEmail}
+                            onChange={(e) => setSharingEmail(e.target.value)}
+                            placeholder="Enter email to share"
+                            onKeyPress={(e) =>
+                              e.key === "Enter" && handleShareAccess()
+                            }
+                          />
+                          <Button onClick={handleShareAccess} className="px-2">
+                            Share
+                          </Button>
+                        </div>
+                      </TabsContent>
+                      <TabsContent value="revoke">
+                        <div className="flex gap-2">
+                          <Input
+                            type="email"
+                            value={sharingEmail}
+                            onChange={(e) => setSharingEmail(e.target.value)}
+                            placeholder="Enter email to revoke"
+                            onKeyPress={(e) =>
+                              e.key === "Enter" && handleRevokeAccess()
+                            }
+                          />
+                          <Button
+                            onClick={handleRevokeAccess}
+                            variant="destructive"
+                            className="px-2"
+                          >
+                            Revoke
+                          </Button>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
                   </DialogContent>
                 </Dialog>
               </div>
-              {email!=image.owner && <p className="text-xs text-slate-500">Asset shared by {image.owner}</p>}
             </div>
           ))
         )}
