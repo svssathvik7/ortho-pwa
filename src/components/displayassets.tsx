@@ -3,12 +3,20 @@ import { toast } from "../hooks/use-toast";
 import { useAuthStore } from "../store/authStore";
 import ImageResult from "../types/assetResults";
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
 import { Badge } from "./ui/badge";
-import { Bolt, Hand, Split, Search } from "lucide-react";
+import { Bolt, Hand, Split, Search, Share2 } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import DICOMDisplay from "./DICOMDisplay";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
 
 export const IsDicom = (url: string): boolean => {
   return (
@@ -21,7 +29,9 @@ const AssetGrid = () => {
   const [images, setImages] = useState<ImageResult[]>([]);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
-  const [loading,setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sharingEmail, setSharingEmail] = useState("");
+  const [sharingImageId, setSharingImageId] = useState<string | null>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -48,13 +58,44 @@ const AssetGrid = () => {
           title: error.response?.data || "An error occurred",
           variant: "destructive",
         });
-      }
-      finally{
+      } finally {
         setLoading(false);
       }
     };
     fetchImages();
   }, [email]);
+
+  const handleShareAccess = async () => {
+    if (!sharingEmail.trim() || !sharingImageId) return;
+    console.log(sharingImageId);
+    try {
+      await api.post(`/api/assets/${sharingImageId}/share`, {
+        email: sharingEmail.trim(),
+        permission: "view",
+        owner: email,
+      });
+
+      setImages((prevImages) =>
+        prevImages.map((img) =>
+          img._id === sharingImageId
+            ? {
+                ...img,
+                sharedWith: [...(img.sharedWith || []), sharingEmail.trim()],
+              }
+            : img
+        )
+      );
+
+      setSharingEmail("");
+      setSharingImageId(null); // Reset sharingImageId
+      toast({ title: "Access granted successfully" });
+    } catch (error) {
+      toast({
+        title: "Failed to grant access",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="mt-28 px-4">
@@ -64,8 +105,12 @@ const AssetGrid = () => {
         </div>
       )}
       <div className="flex-grow w-full flex justify-center flex-wrap gap-1 overflow-y-scroll">
-
-          {loading ? <p> Loading assets...</p> : images.length === 0 ? <p>No assets to see!</p> : images.map((image) => (
+        {loading ? (
+          <p> Loading assets...</p>
+        ) : images.length === 0 ? (
+          <p>No assets to see!</p>
+        ) : (
+          images.map((image) => (
             <div
               key={image._id}
               className="group bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200 relative p-2 w-full lg:w-72"
@@ -79,7 +124,10 @@ const AssetGrid = () => {
                 />
               ) : (
                 <div onClick={() => setSelectedImage(image)}>
-                  <DICOMDisplay className="w-full aspect-square object-cover max-h-72 cursor-pointer" url={image.cloudinaryUrl}/>
+                  <DICOMDisplay
+                    className="w-full aspect-square object-cover max-h-72 cursor-pointer"
+                    url={image.cloudinaryUrl}
+                  />
                 </div>
               )}
 
@@ -190,8 +238,57 @@ const AssetGrid = () => {
                   </HoverCardContent>
                 </HoverCard>
               </div>
+
+              <div className="flex justify-end gap-2 mt-4">
+                <Dialog
+                  open={sharingImageId === image._id}
+                  onOpenChange={(isOpen) => {
+                    if (!isOpen) setSharingImageId(null);
+                  }}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className={`${
+                        email != image?.owner ? " hidden " : " flex "
+                      } items-center gap-2 px-2`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImage(image);
+                        setSharingImageId(image._id); // Set the image ID when share button is clicked
+                      }}
+                      disabled={email != image?.owner}
+                    >
+                      <Share2 className="w-4 h-4" />
+                      Share
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Share Access</DialogTitle>
+                    </DialogHeader>
+                    <div className="flex gap-2">
+                      <Input
+                        type="email"
+                        value={sharingEmail}
+                        onChange={(e) => setSharingEmail(e.target.value)}
+                        placeholder="Enter email"
+                        onKeyPress={(e) =>
+                          e.key === "Enter" && handleShareAccess()
+                        }
+                      />
+                      <Button onClick={handleShareAccess} className="px-2">
+                        Share
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              {email!=image.owner && <p className="text-xs text-slate-500">Asset shared by {image.owner}</p>}
             </div>
-          ))}
+          ))
+        )}
       </div>
 
       {/* Dialog for Selected Image */}
@@ -205,11 +302,18 @@ const AssetGrid = () => {
               <DialogTitle>Asset Details</DialogTitle>
             </DialogHeader>
             <div className="flex flex-col items-center justify-center overflow-y-scroll">
-              {IsDicom(selectedImage.cloudinaryUrl) ? <DICOMDisplay url={selectedImage.cloudinaryUrl} className="w-fit aspect-square object-cover cursor-pointer"/> : <img
-                src={selectedImage.cloudinaryUrl}
-                alt={selectedImage.patientDemographics.notes || "Asset Image"}
-                className="w-full max-h-96 object-contain"
-              />}
+              {IsDicom(selectedImage.cloudinaryUrl) ? (
+                <DICOMDisplay
+                  url={selectedImage.cloudinaryUrl}
+                  className="w-fit aspect-square object-cover cursor-pointer"
+                />
+              ) : (
+                <img
+                  src={selectedImage.cloudinaryUrl}
+                  alt={selectedImage.patientDemographics.notes || "Asset Image"}
+                  className="w-full max-h-96 object-contain"
+                />
+              )}
               <Tabs className="w-full flex-wrap" defaultValue="body-parts">
                 <TabsList className="flex-wrap w-full m-2">
                   <TabsTrigger className="w-1/4" value="body-parts">
@@ -225,7 +329,10 @@ const AssetGrid = () => {
                     <Bolt />
                   </TabsTrigger>
                 </TabsList>
-                <TabsContent value="body-parts" className="flex items-center justify-start">
+                <TabsContent
+                  value="body-parts"
+                  className="flex items-center justify-start"
+                >
                   <span className="text-black text-xl m-2">
                     {selectedImage.bodyParts.length == 0 && "No"} Body tags
                   </span>
@@ -237,7 +344,10 @@ const AssetGrid = () => {
                     ))}
                   </div>
                 </TabsContent>
-                <TabsContent value="diagnoses" className="flex items-center justify-start">
+                <TabsContent
+                  value="diagnoses"
+                  className="flex items-center justify-start"
+                >
                   <span className="text-black text-xl m-2">
                     {selectedImage.diagnoses.length == 0 && "No"} Diagnoses tags
                   </span>
@@ -249,7 +359,10 @@ const AssetGrid = () => {
                     ))}
                   </div>
                 </TabsContent>
-                <TabsContent value="classification" className="flex items-center justify-start">
+                <TabsContent
+                  value="classification"
+                  className="flex items-center justify-start"
+                >
                   <span className="text-black text-xl m-2">
                     {selectedImage.classifications.length == 0 && "No"}{" "}
                     Classification tags
@@ -262,7 +375,10 @@ const AssetGrid = () => {
                     ))}
                   </div>
                 </TabsContent>
-                <TabsContent value="implants" className="flex items-center justify-start">
+                <TabsContent
+                  value="implants"
+                  className="flex items-center justify-start"
+                >
                   <span className="text-black text-xl m-2">
                     {selectedImage.implants.length == 0 && "No"} Implant tags
                   </span>
@@ -275,8 +391,22 @@ const AssetGrid = () => {
                   </div>
                 </TabsContent>
               </Tabs>
-              {selectedImage.patientDemographics.clinical_history && <div className="w-full text-left flex items-center justify-start m-2"><p className="text-lg">Clinical history: </p><span className="bg-yellow-200 p-2 m-2">{selectedImage.patientDemographics.clinical_history}</span></div>}
-              {selectedImage.patientDemographics.notes && <div className="w-full text-left flex items-center justify-start m-2"><p className="text-lg">Notes: </p><span className="bg-yellow-200 p-2 m-2">{selectedImage.patientDemographics.notes}</span></div>}
+              {selectedImage.patientDemographics.clinical_history && (
+                <div className="w-full text-left flex items-center justify-start m-2">
+                  <p className="text-lg">Clinical history: </p>
+                  <span className="bg-yellow-200 p-2 m-2">
+                    {selectedImage.patientDemographics.clinical_history}
+                  </span>
+                </div>
+              )}
+              {selectedImage.patientDemographics.notes && (
+                <div className="w-full text-left flex items-center justify-start m-2">
+                  <p className="text-lg">Notes: </p>
+                  <span className="bg-yellow-200 p-2 m-2">
+                    {selectedImage.patientDemographics.notes}
+                  </span>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
