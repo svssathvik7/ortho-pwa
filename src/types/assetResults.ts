@@ -13,6 +13,7 @@ type ImageResult = {
       notes: string;
       gender: string;
       clinical_history: string;
+      name: string;
     };
   }
   export default ImageResult;

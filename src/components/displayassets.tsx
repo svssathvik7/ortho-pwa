@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import DICOMDisplay from "./DICOMDisplay";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { parseTagString } from "../utils/cameraUtils";
 
 export const IsDicom = (url: string): boolean => {
   return (
@@ -32,6 +33,21 @@ const AssetGrid = () => {
   const [loading, setLoading] = useState(false);
   const [sharingEmail, setSharingEmail] = useState("");
   const [sharingImageId, setSharingImageId] = useState<string | null>(null);
+  const [bodyPartTags, setBodyPartTags] = useState("");
+  const [diagnosisTags, setDiagnosisTags] = useState("");
+  const [classificationTags, setClassificationTags] = useState("");
+  const [classificationSuggestions, setClassificationSuggestions] = useState(
+    []
+  );
+  const [editingImageId, setEditingImageId] = useState(null);
+  const [clinical_history, setClinicalHistory] = useState("");
+  const [notes, setNotes] = useState("");
+  const [implantTags, setImplantTags] = useState("");
+  const [demographics, setDemographics] = useState({
+    name: "",
+    age: 0,
+    gender: "",
+  });
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -97,6 +113,48 @@ const AssetGrid = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchClassificationSuggestions = async () => {
+      // Only fetch if there's text to search for
+      const lastTag = classificationTags.trim().split(/\s+/).pop();
+      if (lastTag && lastTag.length > 0) {
+        try {
+          const response = await api.get(`/api/classifications/${lastTag}`);
+          setClassificationSuggestions(response.data.classifications || []);
+        } catch (error) {
+          console.error("Error fetching suggestions:", error);
+          setClassificationSuggestions([]);
+        }
+      } else {
+        setClassificationSuggestions([]);
+      }
+    };
+
+    // Debounce the API call to prevent too many requests
+    const timeoutId = setTimeout(fetchClassificationSuggestions, 300);
+    return () => clearTimeout(timeoutId);
+  }, [classificationTags]);
+
+  const handleClassificationSuggestion = (suggestion: any) => {
+    // Get existing tags as an array
+    const existingTags = classificationTags
+      .trim()
+      .split(/\s+/)
+      .filter((tag) => tag.length > 0);
+
+    // Remove the partial tag that triggered the suggestion
+    existingTags.pop();
+
+    // Add the selected suggestion
+    existingTags.push(suggestion.tag);
+
+    // Update the classification tags state
+    setClassificationTags(existingTags.join(" ") + " ");
+
+    // Clear suggestions
+    setClassificationSuggestions([]);
+  };
+
   const handleRevokeAccess = async () => {
     if (!sharingEmail.trim() || !sharingImageId) return;
 
@@ -123,6 +181,57 @@ const AssetGrid = () => {
     } catch (error) {
       toast({
         title: "Failed to revoke access",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const setEditImage = (image: any) => {
+    setBodyPartTags(image.bodyParts.join(" "));
+    setDiagnosisTags(image.diagnoses.join(" "));
+    setClassificationTags(image.classifications.join(" "));
+    setImplantTags(image.implants.join(" "));
+    setDemographics({
+      name: image.patientDemographics.name,
+      age: image.patientDemographics.age,
+      gender: image.patientDemographics.gender,
+    });
+    setNotes(image.patientDemographics.notes);
+    setClinicalHistory(image.patientDemographics.clinical_history);
+  };
+
+  const handleUpdateAsset = async () => {
+    console.log("editingImageId");
+    if (!editingImageId) return;
+
+    const editFormState = {
+      bodyParts: parseTagString(bodyPartTags).map((tag) => tag.toLowerCase()),
+      diagnoses: parseTagString(diagnosisTags).map((tag) =>
+        tag.toLowerCase()
+      ),
+      classifications: parseTagString(classificationTags).map((tag) =>
+        tag.toLowerCase()
+      ),
+      implants: parseTagString(implantTags).map((tag) => tag.toLowerCase()),
+      patientDemographics: {
+        name: demographics.name.toLowerCase(),
+        age: demographics.age,
+        gender: demographics.gender.toLowerCase(),
+      },
+      clinicalHistory: clinical_history.toLowerCase(),
+      notes: notes.toLowerCase(),
+      owner: email ? email.toLowerCase() : "",
+      isNewPatient: false,
+    }
+
+    try {
+      await api.post(`/api/assets/${editingImageId}/update`, editFormState);
+
+      setEditingImageId(null);
+      toast({ title: "Asset updated successfully" });
+    } catch (error) {
+      toast({
+        title: "Failed to update asset",
         variant: "destructive",
       });
     }
@@ -182,7 +291,7 @@ const AssetGrid = () => {
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {image.bodyParts.map((part) => (
-                        <p className="rounded-full bg-yellow-500 text-white px-2">
+                        <p key={part} className="rounded-full bg-yellow-500 text-white px-2">
                           {part}
                         </p>
                       ))}
@@ -208,7 +317,7 @@ const AssetGrid = () => {
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {image.implants.map((implant) => (
-                        <p className="rounded-full bg-yellow-500 text-white px-2">
+                        <p key={implant} className="rounded-full bg-yellow-500 text-white px-2">
                           {implant}
                         </p>
                       ))}
@@ -235,7 +344,7 @@ const AssetGrid = () => {
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {image.classifications.map((classification) => (
-                        <p className="rounded-full bg-yellow-500 text-white px-2">
+                        <p key={classification} className="rounded-full bg-yellow-500 text-white px-2">
                           {classification}
                         </p>
                       ))}
@@ -261,7 +370,7 @@ const AssetGrid = () => {
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {image.diagnoses.map((diagnoses) => (
-                        <p className="rounded-full bg-yellow-500 text-white px-2">
+                        <p key={diagnoses} className="rounded-full bg-yellow-500 text-white px-2">
                           {diagnoses}
                         </p>
                       ))}
@@ -284,7 +393,7 @@ const AssetGrid = () => {
                         email !== image?.owner ? "hidden" : "flex"
                       } items-center gap-2 px-2`}
                       onClick={() => {
-                        // setSharingImageId(image._id);
+                        setEditImage(image);
                       }}
                       disabled={email !== image?.owner}
                     >
@@ -292,11 +401,135 @@ const AssetGrid = () => {
                       Edit
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="h-fit max-h-[70dvh] overflow-y-scroll p-2">
                     <DialogHeader>
-                      <DialogTitle>Edit asset</DialogTitle>
+                      <DialogTitle>{image.patientDemographics.name ? `Edit ${image.patientDemographics.name}'s asset (under dev not working)` : "Edit asset (under dev not working)"}</DialogTitle>
                     </DialogHeader>
-                    <p>Feature under development</p>
+                    <div className="space-y-2 w-full">
+                      <div className="flex flex-wrap mb-2 w-full">
+                        {bodyPartTags != "" &&
+                          bodyPartTags
+                            .split(" ")
+                            .map(
+                              (tag) =>
+                                tag != "" && (
+                                  <span key={tag} className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                                    {tag}
+                                  </span>
+                                )
+                            )}
+                      </div>
+                      <div className="flex gap-2 w-full">
+                        <Input
+                          type="text"
+                          value={bodyPartTags}
+                          onChange={(e) => setBodyPartTags(e.target.value)}
+                          placeholder="Enter body part..."
+                          className="flex-1 w-full"
+                        />
+                      </div>
+                      <div className="space-y-2 w-full">
+                        <div className="flex flex-wrap mb-2">
+                          {diagnosisTags != "" &&
+                            diagnosisTags
+                              .split(" ")
+                              .map(
+                                (tag) =>
+                                  tag != "" && (
+                                    <span key={tag} className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                                      {tag}
+                                    </span>
+                                  )
+                              )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            type="text"
+                            value={diagnosisTags}
+                            onChange={(e) => setDiagnosisTags(e.target.value)}
+                            placeholder="Enter diagnoses tags..."
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2 w-full">
+                        <div className="flex flex-wrap mb-2">
+                          {classificationTags != "" &&
+                            classificationTags
+                              .split(" ")
+                              .map(
+                                (tag) =>
+                                  tag != "" && (
+                                    <span key={tag} className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                                      {tag}
+                                    </span>
+                                  )
+                              )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            type="text"
+                            value={classificationTags}
+                            onChange={(e) =>
+                              setClassificationTags(e.target.value)
+                            }
+                            placeholder="Enter classification tags..."
+                            className="flex-1"
+                          />
+                        </div>
+                        {classificationSuggestions.length > 0 && (
+                          <ul className="z-50 relative w-full mt-1 bg-white text-black border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                            {classificationSuggestions.map(
+                              (suggestion: any, index) => (
+                                <li
+                                  key={index}
+                                  onClick={() =>
+                                    handleClassificationSuggestion(suggestion)
+                                  }
+                                  className="p-1 w-full h-48 overflow-y-scroll cursor-pointer hover:bg-blue-50 transition-colors"
+                                >
+                                  <img
+                                    className="object-contain h-32"
+                                    key={index}
+                                    src={suggestion.url}
+                                  />
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                      <div className="space-y-2 w-full">
+                        <div className="flex flex-wrap mb-2">
+                          {implantTags != "" &&
+                            implantTags
+                              .split(" ")
+                              .map(
+                                (tag) =>
+                                  tag != "" && (
+                                    <span key={tag} className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
+                                      {tag}
+                                    </span>
+                                  )
+                              )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input
+                            type="text"
+                            value={implantTags}
+                            onChange={(e) => setImplantTags(e.target.value)}
+                            placeholder="Enter implant tags..."
+                            className="flex-1"
+                          />
+                        </div>
+                      </div>
+                      {/* patient data */}
+                    </div>
+                    <Button onClick={(e)=>{
+                      e.preventDefault();
+                      console.log("update asset");
+                      handleUpdateAsset();
+                    }}>Update asset</Button>
                   </DialogContent>
                 </Dialog>
                 <Dialog
