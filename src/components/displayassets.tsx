@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 import { Badge } from "./ui/badge";
-import { Bolt, Hand, Split, Search, Share2 } from "lucide-react";
+import { Bolt, Hand, Split, Search, Share2, Edit } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./ui/hover-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import DICOMDisplay from "./DICOMDisplay";
@@ -275,6 +275,30 @@ const AssetGrid = () => {
                 </p>
               )}
               <div className="flex justify-end gap-2 mt-4">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className={`${
+                        email !== image?.owner ? "hidden" : "flex"
+                      } items-center gap-2 px-2`}
+                      onClick={() => {
+                        // setSharingImageId(image._id);
+                      }}
+                      disabled={email !== image?.owner}
+                    >
+                      <Edit className="w-4 h-4" />
+                      Edit
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit asset</DialogTitle>
+                    </DialogHeader>
+                    <p>Feature under development</p>
+                  </DialogContent>
+                </Dialog>
                 <Dialog
                   open={sharingImageId === image._id}
                   onOpenChange={(isOpen) => {
