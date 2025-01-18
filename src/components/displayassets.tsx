@@ -187,6 +187,7 @@ const AssetGrid = () => {
   };
 
   const setEditImage = (image: any) => {
+    console.log("image",image);
     setEditingImageId(image._id); // Add this line to set the editingImageId
     setBodyPartTags(image.bodyParts.join(" "));
     setDiagnosisTags(image.diagnoses.join(" "));
@@ -219,18 +220,18 @@ const AssetGrid = () => {
       ),
       implants: parseTagString(implantTags).map((tag) => tag.toLowerCase()),
       patientDemographics: {
-        name: demographics.name.toLowerCase(),
-        age: demographics.age,
-        gender: demographics.gender.toLowerCase(),
+        name: demographics?.name?.toLowerCase(),
+        age: demographics?.age,
+        gender: demographics?.gender?.toLowerCase(),
       },
-      clinicalHistory: clinical_history.toLowerCase(),
-      notes: notes.toLowerCase(),
-      owner: email ? email.toLowerCase() : "",
+      clinicalHistory: clinical_history?.toLowerCase(),
+      notes: notes?.toLowerCase(),
+      owner: email ? email?.toLowerCase() : "",
       isNewPatient: false,
     };
 
     try {
-      const response = await api.post(
+      await api.post(
         `/api/assets/${editingImageId}/update`,
         editFormState
       );
