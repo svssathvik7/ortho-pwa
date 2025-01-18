@@ -40,6 +40,7 @@ export default function Account() {
   },[isAuthenticated]);
 
   useEffect(() => {
+    setIsLoading(true);
     const fetchUserData = async () => {
       try {
         if(!isAuthenticated) {
@@ -61,6 +62,9 @@ export default function Account() {
           description: "Failed to load user data",
           variant: "destructive",
         });
+      }
+      finally{
+        setIsLoading(false);
       }
     };
 
@@ -157,7 +161,7 @@ export default function Account() {
   return (
     <div className="min-h-screen w-full p-4 mt-24">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
+      {isLoading ? <p>Fetching user details...</p> : <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-center">Account Settings</h1>
 
         <Card className="max-w-lg mx-auto p-2">
@@ -226,7 +230,7 @@ export default function Account() {
             </form>
           </CardContent>
         </Card>
-      </div>
+      </div>}
     </div>
   );
 }
