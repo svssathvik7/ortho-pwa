@@ -24,11 +24,11 @@ export default function AssetResults({ images }: AssetResultsProps) {
             className="bg-white rounded-lg shadow-md w-72 h-fit p-4 cursor-pointer"
             onClick={() => setSelectedImage(image)}
           >
-            <img
+            {IsDicom(image.cloudinaryUrl) ? <DICOMDisplay url={image.cloudinaryUrl} className="w-64 aspect-square object-contain"/> : <img
               src={image.cloudinaryUrl}
               alt="Medical image"
               className="w-64 aspect-square object-contain"
-            />
+            />}
           </div>
         ))}
       </div>
