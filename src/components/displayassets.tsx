@@ -187,6 +187,7 @@ const AssetGrid = () => {
   };
 
   const setEditImage = (image: any) => {
+    setEditingImageId(image._id); // Add this line to set the editingImageId
     setBodyPartTags(image.bodyParts.join(" "));
     setDiagnosisTags(image.diagnoses.join(" "));
     setClassificationTags(image.classifications.join(" "));
@@ -201,14 +202,18 @@ const AssetGrid = () => {
   };
 
   const handleUpdateAsset = async () => {
-    console.log("editingImageId");
-    if (!editingImageId) return;
+    if (!editingImageId) {
+      console.error("No editing image ID set");
+      toast({
+        title: "Error: No image selected for editing",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const editFormState = {
       bodyParts: parseTagString(bodyPartTags).map((tag) => tag.toLowerCase()),
-      diagnoses: parseTagString(diagnosisTags).map((tag) =>
-        tag.toLowerCase()
-      ),
+      diagnoses: parseTagString(diagnosisTags).map((tag) => tag.toLowerCase()),
       classifications: parseTagString(classificationTags).map((tag) =>
         tag.toLowerCase()
       ),
@@ -222,14 +227,25 @@ const AssetGrid = () => {
       notes: notes.toLowerCase(),
       owner: email ? email.toLowerCase() : "",
       isNewPatient: false,
-    }
+    };
 
     try {
-      await api.post(`/api/assets/${editingImageId}/update`, editFormState);
+      const response = await api.post(
+        `/api/assets/${editingImageId}/update`,
+        editFormState
+      );
+
+      // Update the images state with the updated image
+      // setImages((prevImages) =>
+      //   prevImages.map((img) =>
+      //     img._id === editingImageId ? { ...img, ...editFormState } : img
+      //   )
+      // );
 
       setEditingImageId(null);
       toast({ title: "Asset updated successfully" });
     } catch (error) {
+      console.error("Update failed:", error);
       toast({
         title: "Failed to update asset",
         variant: "destructive",
@@ -291,7 +307,10 @@ const AssetGrid = () => {
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {image.bodyParts.map((part) => (
-                        <p key={part} className="rounded-full bg-yellow-500 text-white px-2">
+                        <p
+                          key={part}
+                          className="rounded-full bg-yellow-500 text-white px-2"
+                        >
                           {part}
                         </p>
                       ))}
@@ -317,7 +336,10 @@ const AssetGrid = () => {
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {image.implants.map((implant) => (
-                        <p key={implant} className="rounded-full bg-yellow-500 text-white px-2">
+                        <p
+                          key={implant}
+                          className="rounded-full bg-yellow-500 text-white px-2"
+                        >
                           {implant}
                         </p>
                       ))}
@@ -344,7 +366,10 @@ const AssetGrid = () => {
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {image.classifications.map((classification) => (
-                        <p key={classification} className="rounded-full bg-yellow-500 text-white px-2">
+                        <p
+                          key={classification}
+                          className="rounded-full bg-yellow-500 text-white px-2"
+                        >
                           {classification}
                         </p>
                       ))}
@@ -370,7 +395,10 @@ const AssetGrid = () => {
                     </span>
                     <div className="flex flex-wrap gap-1">
                       {image.diagnoses.map((diagnoses) => (
-                        <p key={diagnoses} className="rounded-full bg-yellow-500 text-white px-2">
+                        <p
+                          key={diagnoses}
+                          className="rounded-full bg-yellow-500 text-white px-2"
+                        >
                           {diagnoses}
                         </p>
                       ))}
@@ -403,21 +431,26 @@ const AssetGrid = () => {
                   </DialogTrigger>
                   <DialogContent className="h-fit max-h-[70dvh] overflow-y-scroll p-2">
                     <DialogHeader>
-                      <DialogTitle>{image.patientDemographics.name ? `Edit ${image.patientDemographics.name}'s asset (under dev not working)` : "Edit asset (under dev not working)"}</DialogTitle>
+                      <DialogTitle>
+                        {image.patientDemographics.name
+                          ? `Edit ${image.patientDemographics.name}'s asset (under dev not working)`
+                          : "Edit asset (under dev not working)"}
+                      </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-2 w-full">
                       <div className="flex flex-wrap mb-2 w-full">
                         {bodyPartTags != "" &&
-                          bodyPartTags
-                            .split(" ")
-                            .map(
-                              (tag) =>
-                                tag != "" && (
-                                  <span key={tag} className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
-                                    {tag}
-                                  </span>
-                                )
-                            )}
+                          bodyPartTags.split(" ").map(
+                            (tag) =>
+                              tag != "" && (
+                                <span
+                                  key={tag}
+                                  className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs"
+                                >
+                                  {tag}
+                                </span>
+                              )
+                          )}
                       </div>
                       <div className="flex gap-2 w-full">
                         <Input
@@ -431,16 +464,17 @@ const AssetGrid = () => {
                       <div className="space-y-2 w-full">
                         <div className="flex flex-wrap mb-2">
                           {diagnosisTags != "" &&
-                            diagnosisTags
-                              .split(" ")
-                              .map(
-                                (tag) =>
-                                  tag != "" && (
-                                    <span key={tag} className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
-                                      {tag}
-                                    </span>
-                                  )
-                              )}
+                            diagnosisTags.split(" ").map(
+                              (tag) =>
+                                tag != "" && (
+                                  <span
+                                    key={tag}
+                                    className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs"
+                                  >
+                                    {tag}
+                                  </span>
+                                )
+                            )}
                         </div>
                         <div className="flex gap-2">
                           <Input
@@ -455,16 +489,17 @@ const AssetGrid = () => {
                       <div className="space-y-2 w-full">
                         <div className="flex flex-wrap mb-2">
                           {classificationTags != "" &&
-                            classificationTags
-                              .split(" ")
-                              .map(
-                                (tag) =>
-                                  tag != "" && (
-                                    <span key={tag} className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
-                                      {tag}
-                                    </span>
-                                  )
-                              )}
+                            classificationTags.split(" ").map(
+                              (tag) =>
+                                tag != "" && (
+                                  <span
+                                    key={tag}
+                                    className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs"
+                                  >
+                                    {tag}
+                                  </span>
+                                )
+                            )}
                         </div>
                         <div className="flex gap-2">
                           <Input
@@ -502,16 +537,17 @@ const AssetGrid = () => {
                       <div className="space-y-2 w-full">
                         <div className="flex flex-wrap mb-2">
                           {implantTags != "" &&
-                            implantTags
-                              .split(" ")
-                              .map(
-                                (tag) =>
-                                  tag != "" && (
-                                    <span key={tag} className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs">
-                                      {tag}
-                                    </span>
-                                  )
-                              )}
+                            implantTags.split(" ").map(
+                              (tag) =>
+                                tag != "" && (
+                                  <span
+                                    key={tag}
+                                    className="bg-[#facc15] text-black px-2 rounded-full m-1 text-xs"
+                                  >
+                                    {tag}
+                                  </span>
+                                )
+                            )}
                         </div>
                         <div className="flex gap-2">
                           <Input
@@ -525,11 +561,13 @@ const AssetGrid = () => {
                       </div>
                       {/* patient data */}
                     </div>
-                    <Button onClick={(e)=>{
-                      e.preventDefault();
-                      console.log("update asset");
-                      handleUpdateAsset();
-                    }}>Update asset</Button>
+                    <Button
+                      onClick={handleUpdateAsset}
+                      className="w-full mt-4"
+                      variant="default"
+                    >
+                      Update asset
+                    </Button>
                   </DialogContent>
                 </Dialog>
                 <Dialog
