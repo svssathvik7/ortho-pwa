@@ -237,11 +237,22 @@ const AssetGrid = () => {
       );
 
       // Update the images state with the updated image
-      // setImages((prevImages) =>
-      //   prevImages.map((img) =>
-      //     img._id === editingImageId ? { ...img, ...editFormState } : img
-      //   )
-      // );
+      const fetchImages = async () => {
+        setLoading(true);
+        try {
+          const response = await api.get(`/api/assets/get-user-assets/${email}`);
+          setImages(response.data.data.images);
+        } catch (error:any) {
+          if (!navigator.onLine && images.length > 0) return;
+          toast({
+            title: error.response?.data || "An error occurred",
+            variant: "destructive",
+          });
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchImages();
 
       setEditingImageId(null);
       toast({ title: "Asset updated successfully" });
@@ -434,8 +445,8 @@ const AssetGrid = () => {
                     <DialogHeader>
                       <DialogTitle>
                         {image.patientDemographics.name
-                          ? `Edit ${image.patientDemographics.name}'s asset (under dev not working)`
-                          : "Edit asset (under dev not working)"}
+                          ? `Edit ${image.patientDemographics.name}'s asset`
+                          : "Edit asset"}
                       </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-2 w-full">
